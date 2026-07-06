@@ -9,7 +9,7 @@
 </style>
 </head>
 <body>
-<header><div><h1>コマスター</h1><div class="sub">ルール見直し版</div></div><button id="reset" class="reset">リセット</button></header>
+<header><div><h1>コマスター</h1><div class="sub">マップ修正版</div></div><button id="reset" class="reset">リセット</button></header>
 <main class="app">
   <div id="status" class="status"></div>
   <section class="fieldWrap">
@@ -19,31 +19,29 @@
     <div id="bottomBench" class="benchRow"></div>
     <div class="pcRows"><div class="pcBox"><div class="pcTitle">相手PC</div><div id="p2pc" class="pcChips"></div></div><div class="pcBox"><div class="pcTitle">自分PC</div><div id="p1pc" class="pcChips"></div></div></div>
     <div class="actions"><button class="action surrender" disabled>投了</button><button class="action ability" disabled>特性発動</button><button class="action ai" disabled>AI</button></div>
-    <div class="hint">エントリーはMPを1消費。先手初手はMP-1。隣接バトル・移動先バトル・包囲KO・動けない時の勝利を入れています。</div>
+    <div class="hint">マップのノード配置を原作寄りに修正しました。まだ見た目は簡略版ですが、上段の横ライン・左右の縦ライン・中央の斜線構造に寄せています。</div>
   </section>
   <div id="log" class="log"></div>
 </main>
 <div id="rouletteOverlay" class="rouletteOverlay"><div class="rouletteBox"><div class="rouletteTitle">バトルルーレット</div><div class="wheels"><div class="wheelCard"><div id="atkName" class="wheelName"></div><div class="wheelWrap"><div class="pointer"></div><div id="atkWheel" class="wheel"></div></div><div id="atkResult" class="wheelResult"></div></div><div class="wheelCard"><div id="defName" class="wheelName"></div><div class="wheelWrap"><div class="pointer"></div><div id="defWheel" class="wheel"></div></div><div id="defResult" class="wheelResult"></div></div></div><div id="battleResult" class="resultLine">ルーレット回転中...</div><button id="continueBattle" class="continue">続ける</button></div></div>
 <script>
-const NODES={spawnTL:[18,22],topL:[18,36],topA:[34,36],topB:[42,36],goalTop:[50,36],topC:[58,36],topD:[66,36],entryTR:[82,36],leftM:[18,52],upperL:[34,48],upperC:[50,48],upperR:[66,48],rightM:[82,52],lowerL:[34,64],lowerR:[66,64],entryBL:[18,76],botA:[34,76],botB:[42,76],goalBottom:[50,76],botC:[58,76],botD:[66,76],entryBR:[82,76],spawnBR:[82,88]};
-const EDGES=[['topL','topA'],['topA','topB'],['topB','goalTop'],['goalTop','topC'],['topC','topD'],['topD','entryTR'],['spawnTL','topL'],['topL','leftM'],['leftM','entryBL'],['entryTR','rightM'],['rightM','entryBR'],['entryBR','spawnBR'],['topA','upperL'],['topB','upperC'],['topC','upperR'],['upperL','upperC'],['upperC','upperR'],['upperL','lowerL'],['upperR','lowerR'],['leftM','lowerL'],['rightM','lowerR'],['entryBL','botA'],['botA','botB'],['botB','goalBottom'],['goalBottom','botC'],['botC','botD'],['botD','entryBR'],['lowerL','botB'],['lowerL','goalBottom'],['lowerR','goalBottom'],['lowerR','botC']];
+const NODES={spawnTL:[10,22],topL:[18,36],topA:[28,36],topB:[39,36],goalTop:[50,36],topC:[61,36],topD:[72,36],entryTR:[82,36],leftMid:[18,50],leftLow:[18,64],midL:[34,48],centerMid:[50,48],midR:[66,48],rightMid:[82,50],rightLow:[82,64],lowerL:[34,64],lowerR:[66,64],entryBL:[18,76],botA:[28,76],botB:[39,76],goalBottom:[50,76],botC:[61,76],botD:[72,76],entryBR:[82,76],spawnBR:[90,88]};
+const EDGES=[['topL','topA'],['topA','topB'],['topB','goalTop'],['goalTop','topC'],['topC','topD'],['topD','entryTR'],['spawnTL','topL'],['topL','leftMid'],['leftMid','leftLow'],['leftLow','entryBL'],['entryTR','rightMid'],['rightMid','rightLow'],['rightLow','entryBR'],['entryBR','spawnBR'],['topL','midL'],['midL','centerMid'],['centerMid','midR'],['midR','entryTR'],['midL','lowerL'],['midR','lowerR'],['leftLow','lowerL'],['rightLow','lowerR'],['lowerL','lowerR'],['entryBL','botA'],['botA','botB'],['botB','goalBottom'],['goalBottom','botC'],['botC','botD'],['botD','entryBR'],['lowerL','botB'],['lowerR','botC']];
 const SPAWN={p1:['entryBL','entryBR'],p2:['spawnTL','spawnBR']};
 const TARGET={p1:'goalTop',p2:'goalBottom'};
 const TEAM=['pikachu','charmander','bulbasaur','squirtle','eevee','mewtwo'];
 const F={pikachu:{n:'ピカチュウ',mp:3,w:[['miss','ミス',0,8],['white','でんこうせっか',40,32],['gold','でんきショック',30,24],['purple','でんじは',2,20],['white','アイアンテール',70,12]]},charmander:{n:'ヒトカゲ',mp:3,w:[['miss','ミス',0,8],['white','ひっかく',30,36],['white','ひのこ',50,32],['purple','えんまく',1,20]]},bulbasaur:{n:'フシギダネ',mp:3,w:[['miss','ミス',0,8],['white','つるのムチ',40,36],['purple','どくのこな',1,24],['white','はっぱカッター',60,28]]},squirtle:{n:'ゼニガメ',mp:3,w:[['miss','ミス',0,8],['blue','からにこもる',0,24],['white','あわ',30,32],['white','みずでっぽう',60,32]]},eevee:{n:'イーブイ',mp:3,w:[['miss','ミス',0,8],['white','でんこうせっか',40,36],['gold','にどげり',30,24],['white','たいあたり',50,28]]},mewtwo:{n:'ミュウツー',mp:2,w:[['miss','ミス',0,4],['white','サイコキネシス',70,32],['purple','サイコバリア',2,24],['white','サイコブレイク',100,28],['gold','ねんりき',50,8]]}};
-let seq=1,s;const $=q=>document.querySelector(q);
-function turnLabel(id){return id==='p1'?'プレイヤー1':'プレイヤー2'}function other(p){return p==='p1'?'p2':'p1'}function neigh(id){return EDGES.filter(e=>e[0]===id||e[1]===id).map(e=>e[0]===id?e[1]:e[0])}function piece(fig,owner){return{id:owner+'-'+seq++,owner,fig,n:F[fig].n,mp:F[fig].mp,pos:null,wait:0}}function player(id){return{bench:TEAM.map(t=>piece(t,id)),field:[],pc:[]}}function all(){return[...s.p1.field,...s.p2.field]}function at(node){return all().find(p=>p.pos===node)}function byid(id){return[...s.p1.bench,...s.p2.bench,...s.p1.field,...s.p2.field,...s.p1.pc,...s.p2.pc].find(p=>p.id===id)}function addlog(t){s.log.unshift(t)}function clear(){s.sel=null;s.reach=[];s.attack=[]}
+let seq=1,s;const $=q=>document.querySelector(q);function turnLabel(id){return id==='p1'?'プレイヤー1':'プレイヤー2'}function other(p){return p==='p1'?'p2':'p1'}function neigh(id){return EDGES.filter(e=>e[0]===id||e[1]===id).map(e=>e[0]===id?e[1]:e[0])}function piece(fig,owner){return{id:owner+'-'+seq++,owner,fig,n:F[fig].n,mp:F[fig].mp,pos:null,wait:0}}function player(id){return{bench:TEAM.map(t=>piece(t,id)),field:[],pc:[]}}function all(){return[...s.p1.field,...s.p2.field]}function at(node){return all().find(p=>p.pos===node)}function byid(id){return[...s.p1.bench,...s.p2.bench,...s.p1.field,...s.p2.field,...s.p1.pc,...s.p2.pc].find(p=>p.id===id)}function addlog(t){s.log.unshift(t)}function clear(){s.sel=null;s.reach=[];s.attack=[]}
 function init(){seq=1;s={p1:player('p1'),p2:player('p2'),turn:'p1',sel:null,reach:[],attack:[],win:null,locked:false,turnCount:1,log:['ゲーム開始。先手初手だけMPが1少なくなります。']};checkWaitWin();render()}
 function effectiveMp(p){return Math.max(0,p.mp-(s.turnCount===1&&s.turn==='p1'?1:0))}
 function occupiedExcept(target){return new Set(all().filter(p=>p.pos!==target).map(p=>p.pos))}
 function reachableFrom(start,mp,blocked){const vis=new Map([[start,0]]),q=[start];while(q.length){const c=q.shift(),d=vis.get(c);if(d>=mp)continue;for(const n of neigh(c)){if(blocked.has(n)||vis.has(n))continue;vis.set(n,d+1);q.push(n)}}vis.delete(start);return[...vis.keys()]}
 function reachableMove(p){return reachableFrom(p.pos,effectiveMp(p),occupiedExcept(null))}
 function canReachTarget(p,target){const blocked=occupiedExcept(target);return reachableFrom(p.pos,effectiveMp(p),blocked).includes(target)}
-function entryTargets(p){const total=effectiveMp(p);if(total<=0)return[];const result=new Set();for(const sp of SPAWN[s.turn]){if(at(sp))continue;result.add(sp);for(const n of reachableFrom(sp,total-1,occupiedExcept(null)))result.add(n)}return[...result]}
-function spawnOpen(playerId){return SPAWN[playerId].filter(c=>!at(c))}
+function entryTargetsForPlayer(p,playerId){const total=Math.max(0,p.mp-(s.turnCount===1&&playerId==='p1'?1:0));if(total<=0)return[];const result=new Set();for(const sp of SPAWN[playerId]){if(at(sp))continue;result.add(sp);for(const n of reachableFrom(sp,total-1,occupiedExcept(null)))result.add(n)}return[...result]}
+function entryTargets(p){return entryTargetsForPlayer(p,s.turn)}
 function canPieceAct(p){return reachableMove(p).length>0||all().some(o=>o.owner!==p.owner&&canReachTarget(p,o.pos))}
 function hasAnyMove(playerId){if(s[playerId].bench.some(p=>p.wait===0&&entryTargetsForPlayer(p,playerId).length>0))return true;return s[playerId].field.some(canPieceAct)}
-function entryTargetsForPlayer(p,playerId){const total=Math.max(0,p.mp-(s.turnCount===1&&playerId==='p1'?1:0));if(total<=0)return[];const result=new Set();for(const sp of SPAWN[playerId]){if(at(sp))continue;result.add(sp);for(const n of reachableFrom(sp,total-1,occupiedExcept(null)))result.add(n)}return[...result]}
 function checkWaitWin(){if(s.win)return;const current=s.turn;if(!hasAnyMove(current)){s.win=other(current);clear();addlog(turnLabel(current)+'は動けません。'+turnLabel(s.win)+'の勝利です！')}}
 function end(){clear();s.turn=other(s.turn);s.turnCount++;for(const p of s[s.turn].bench)if(p.wait>0)p.wait--;checkWaitWin()}
 function selectBench(id){if(s.win||s.locked)return;const p=s[s.turn].bench.find(x=>x.id===id);if(!p||p.wait)return;const targets=entryTargets(p);if(!targets.length){addlog(p.n+'は今は出撃できません。');return}s.sel={type:'bench',id};s.reach=targets;s.attack=[];addlog(p.n+'を選択。出撃先を選んでください。');render()}
