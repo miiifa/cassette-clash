@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokemon Duel Offline MVP</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1>Pokemon Duel Offline MVP</h1>
+        <p>オンラインなし・1台操作用の最小プロトタイプ</p>
+      </div>
+      <button id="reset-button">リセット</button>
+    </header>
+
+    <main class="layout">
+      <aside class="panel">
+        <h2>Player 2</h2>
+        <div id="p2-bench" class="bench"></div>
+        <h3>PC</h3>
+        <div id="p2-pc" class="pc"></div>
+      </aside>
+
+      <section class="center">
+        <div id="status" class="status"></div>
+        <div id="board" class="board" aria-label="game board"></div>
+        <div id="battle-log" class="battle-log"></div>
+      </section>
+
+      <aside class="panel">
+        <h2>Player 1</h2>
+        <div id="p1-bench" class="bench"></div>
+        <h3>PC</h3>
+        <div id="p1-pc" class="pc"></div>
+      </aside>
+    </main>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
