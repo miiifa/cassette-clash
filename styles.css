@@ -1,0 +1,201 @@
+:root {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #1f2937;
+  background: #f3f4f6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px;
+  background: #111827;
+  color: white;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.app-header p {
+  margin: 4px 0 0;
+  opacity: 0.75;
+}
+
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) minmax(360px, 1fr) minmax(180px, 240px);
+  gap: 18px;
+  padding: 18px;
+}
+
+.panel,
+.center {
+  background: white;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.panel h2,
+.panel h3 {
+  margin: 0 0 12px;
+}
+
+.bench,
+.pc {
+  display: grid;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.figure-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #e5e7eb;
+  border: 2px solid transparent;
+  color: #111827;
+}
+
+.figure-card.active {
+  border-color: #2563eb;
+  background: #dbeafe;
+}
+
+.figure-card.waiting {
+  opacity: 0.5;
+}
+
+.status {
+  min-height: 48px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  font-weight: 700;
+}
+
+.board {
+  width: min(84vw, 560px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 8px;
+  aspect-ratio: 7 / 5;
+}
+
+.cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: transparent;
+  border: 2px dashed transparent;
+  color: #6b7280;
+  min-width: 0;
+}
+
+.cell.playable {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.cell.goal-p1 {
+  background: #fee2e2;
+}
+
+.cell.goal-p2 {
+  background: #dbeafe;
+}
+
+.cell.spawn-p1::after,
+.cell.spawn-p2::after {
+  content: "SP";
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  font-size: 10px;
+  opacity: 0.65;
+}
+
+.cell.reachable {
+  outline: 4px solid #93c5fd;
+}
+
+.cell.attackable {
+  outline: 4px solid #fca5a5;
+}
+
+.piece {
+  display: grid;
+  place-items: center;
+  width: 82%;
+  height: 82%;
+  border-radius: 999px;
+  padding: 4px;
+  text-align: center;
+  font-size: clamp(9px, 1.5vw, 13px);
+  font-weight: 800;
+  color: white;
+  box-shadow: inset 0 -4px 10px rgba(0, 0, 0, 0.18);
+}
+
+.piece.p1 {
+  background: #2563eb;
+}
+
+.piece.p2 {
+  background: #dc2626;
+}
+
+.piece.selected {
+  outline: 4px solid #facc15;
+}
+
+.battle-log {
+  margin-top: 14px;
+  padding: 12px;
+  min-height: 110px;
+  max-height: 220px;
+  overflow: auto;
+  border-radius: 14px;
+  background: #111827;
+  color: #e5e7eb;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .board {
+    width: 100%;
+  }
+}
