@@ -29,7 +29,26 @@
 - オンライン対戦
 - 公式画像/アセット
 
-## 起動方法
+## デプロイ
+
+GitHub Pages 用の workflow を追加済みです。
+
+`main` ブランチに push されると、`.github/workflows/deploy-pages.yml` が実行され、リポジトリ直下の静的ファイルを GitHub Pages にデプロイします。
+
+初回だけ GitHub 側で Pages の設定が必要な場合があります。
+
+1. Repository の `Settings` を開く
+2. `Pages` を開く
+3. `Build and deployment` の Source を `GitHub Actions` にする
+4. `Actions` タブで `Deploy static site to GitHub Pages` を実行、または `main` に push する
+
+公開URLは通常この形式です。
+
+```txt
+https://miiifa.github.io/pokemon-duel-offline/
+```
+
+## ローカル起動
 
 ブラウザのES Modulesを使うため、ローカルサーバー経由で開くのがおすすめです。
 
@@ -49,6 +68,10 @@ VS Code を使う場合は、Live Server 拡張などで開くと開発しやす
 
 ```txt
 .
+├── .github/
+│   └── workflows/
+│       └── deploy-pages.yml
+├── .nojekyll
 ├── index.html
 ├── styles.css
 ├── data/
