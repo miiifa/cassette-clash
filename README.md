@@ -18,9 +18,27 @@
 - PCが2体を超えたら古いフィギュアをベンチへ戻す
 - 相手ゴール到達で勝利
 
-## スマホで遊ぶ
+## Androidアプリとして入れる
 
-private リポジトリのまま個人で遊ぶなら、`play.html` を使います。
+スマホのホーム画面から普通のアプリみたいに開きたい場合は、APKを作って入れます。
+
+このリポジトリには Android WebView アプリと、APKを作る GitHub Actions workflow を追加済みです。
+
+APKの作り方:
+
+1. GitHub のリポジトリで `Actions` を開く
+2. `Build Android APK` を開く
+3. `Run workflow` を押す
+4. ビルドが終わったら、実行結果の `Artifacts` から `pokemon-duel-offline-debug-apk` をダウンロードする
+5. ZIPを展開して `app-debug.apk` をタップする
+6. Android の警告が出たら、このインストール元を許可して入れる
+7. ホーム画面に `コマスター` というアプリが出る
+
+中身は `play.html` をアプリ内 assets にコピーして WebView で開く構成です。`play.html` を更新して `main` にpushすると、次のAPKビルドにも反映されます。
+
+## スマホでHTMLとして遊ぶ
+
+APK化せずに private リポジトリのまま個人で遊ぶなら、`play.html` を使います。
 
 `play.html` は CSS と JavaScript を全部まとめた1ファイル版なので、スマホにダウンロードしてブラウザで開けます。外部ファイルを読み込まないため、`index.html` よりスマホ向きです。
 
@@ -49,7 +67,7 @@ GitHub の画面上でHTMLソースが表示されるだけの場合は、表示
 
 GitHub Pages 用の workflow はありますが、private リポジトリのまま個人利用するなら無理に使わなくてよいです。
 
-public 化すると権利面のリスクが上がるため、現時点では private のまま `play.html` を使う方針がおすすめです。
+public 化すると権利面のリスクが上がるため、現時点では private のまま `play.html` またはAPKを使う方針がおすすめです。
 
 ## ローカル起動
 
@@ -65,7 +83,7 @@ python3 -m http.server 8000
 http://localhost:8000
 ```
 
-スマホでは `play.html` を使う方が簡単です。
+スマホではAPKか `play.html` を使う方が簡単です。
 
 ## ファイル構成
 
@@ -73,8 +91,17 @@ http://localhost:8000
 .
 ├── .github/
 │   └── workflows/
+│       ├── build-android-apk.yml
 │       └── deploy-pages.yml
 ├── .nojekyll
+├── app/
+│   ├── build.gradle
+│   └── src/main/
+│       ├── AndroidManifest.xml
+│       ├── java/com/miiifa/pokemondueloffline/MainActivity.java
+│       └── res/values/styles.xml
+├── build.gradle
+├── settings.gradle
 ├── index.html
 ├── play.html
 ├── styles.css
@@ -89,12 +116,13 @@ http://localhost:8000
 
 ## 次にやるとよさそうなこと
 
-1. play.html のスマホ操作性を改善する
-2. Serebii / Archive / 参考リポジトリからフィギュアデータを増やす
-3. 攻撃ホイールのサイズを実データに寄せる
-4. プレートを追加する
-5. 特性と状態異常を追加する
-6. セーブ/ロードを localStorage に入れる
+1. APKのビルド結果を確認する
+2. play.html のスマホ操作性を改善する
+3. Serebii / Archive / 参考リポジトリからフィギュアデータを増やす
+4. 攻撃ホイールのサイズを実データに寄せる
+5. プレートを追加する
+6. 特性と状態異常を追加する
+7. セーブ/ロードを localStorage に入れる
 
 ## 注意
 
