@@ -18,6 +18,22 @@
 - PCが2体を超えたら古いフィギュアをベンチへ戻す
 - 相手ゴール到達で勝利
 
+## スマホで遊ぶ
+
+private リポジトリのまま個人で遊ぶなら、`play.html` を使います。
+
+`play.html` は CSS と JavaScript を全部まとめた1ファイル版なので、スマホにダウンロードしてブラウザで開けます。外部ファイルを読み込まないため、`index.html` よりスマホ向きです。
+
+Android での目安:
+
+1. GitHub アプリまたはブラウザで `play.html` を開く
+2. `Raw` またはメニューからダウンロードする
+3. ダウンロードした `play.html` を Chrome で開く
+4. ベンチの駒をタップ → 光ったSPをタップして出撃
+5. 盤面の自分の駒をタップ → 青いマスへ移動、赤いマスで攻撃
+
+GitHub の画面上でHTMLソースが表示されるだけの場合は、表示ではなく「ダウンロード」してから開いてください。
+
 ## まだ入れていないもの
 
 - プレート
@@ -31,26 +47,13 @@
 
 ## デプロイ
 
-GitHub Pages 用の workflow を追加済みです。
+GitHub Pages 用の workflow はありますが、private リポジトリのまま個人利用するなら無理に使わなくてよいです。
 
-`main` ブランチに push されると、`.github/workflows/deploy-pages.yml` が実行され、リポジトリ直下の静的ファイルを GitHub Pages にデプロイします。
-
-初回だけ GitHub 側で Pages の設定が必要な場合があります。
-
-1. Repository の `Settings` を開く
-2. `Pages` を開く
-3. `Build and deployment` の Source を `GitHub Actions` にする
-4. `Actions` タブで `Deploy static site to GitHub Pages` を実行、または `main` に push する
-
-公開URLは通常この形式です。
-
-```txt
-https://miiifa.github.io/pokemon-duel-offline/
-```
+public 化すると権利面のリスクが上がるため、現時点では private のまま `play.html` を使う方針がおすすめです。
 
 ## ローカル起動
 
-ブラウザのES Modulesを使うため、ローカルサーバー経由で開くのがおすすめです。
+PCで触る場合は、ブラウザのES Modulesを使うため、ローカルサーバー経由で開くのがおすすめです。
 
 ```bash
 python3 -m http.server 8000
@@ -62,7 +65,7 @@ python3 -m http.server 8000
 http://localhost:8000
 ```
 
-VS Code を使う場合は、Live Server 拡張などで開くと開発しやすいです。
+スマホでは `play.html` を使う方が簡単です。
 
 ## ファイル構成
 
@@ -73,6 +76,7 @@ VS Code を使う場合は、Live Server 拡張などで開くと開発しやす
 │       └── deploy-pages.yml
 ├── .nojekyll
 ├── index.html
+├── play.html
 ├── styles.css
 ├── data/
 │   └── figures.js
@@ -85,11 +89,12 @@ VS Code を使う場合は、Live Server 拡張などで開くと開発しやす
 
 ## 次にやるとよさそうなこと
 
-1. Serebii / Archive / 参考リポジトリからフィギュアデータを増やす
-2. 攻撃ホイールのサイズを実データに寄せる
-3. プレートを `data/plates.js` に追加する
-4. 特性を `effects` として関数化する
-5. セーブ/ロードを localStorage に入れる
+1. play.html のスマホ操作性を改善する
+2. Serebii / Archive / 参考リポジトリからフィギュアデータを増やす
+3. 攻撃ホイールのサイズを実データに寄せる
+4. プレートを追加する
+5. 特性と状態異常を追加する
+6. セーブ/ロードを localStorage に入れる
 
 ## 注意
 
