@@ -10,5 +10,11 @@ K.restoreFigureAbilities=function(){
   K.isPassThrough=p=>p.status.condition==='sleep'||p.status.condition==='frozen';
 };
 K.start=function(){K.restoreFigureAbilities&&K.restoreFigureAbilities();K.initState();K.render();};
-window.addEventListener('DOMContentLoaded',()=>{K.restoreFigureAbilities&&K.restoreFigureAbilities();K.bindUi();K.start();});
+function loadCss(href){const l=document.createElement('link');l.rel='stylesheet';l.href=href;document.head.appendChild(l);}
+function loadScript(src,done){const s=document.createElement('script');s.src=src;s.onload=done;s.onerror=done;document.body.appendChild(s);}
+window.addEventListener('DOMContentLoaded',()=>{
+  K.restoreFigureAbilities&&K.restoreFigureAbilities();
+  loadCss('learning-ui.css');
+  loadScript('src/learning-ui.js',()=>{K.bindUi();K.start();});
+});
 })(window.KOMA);
