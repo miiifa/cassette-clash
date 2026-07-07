@@ -3,19 +3,33 @@ window.KOMA=window.KOMA||{};
 K.PLATES={
   xAttack:{name:'Xアタック',asset:'assets/plates/x-attack.svg',desc:'次の白/金ワザのダメージを+20。',kind:'boost'},
   cassette:{name:'カセット',asset:'assets/plates/cassette.svg',desc:'次の白/金ワザのダメージを+10。',kind:'boostSmall'},
-  xSpeed:{name:'Xスピード',asset:'assets/plates/x-speed.svg',desc:'プレートアセット用。次段階で移動強化に対応。',kind:'preview'}
+  xSpeed:{name:'Xスピード',asset:'assets/plates/x-speed.svg',desc:'このターン、次に動かす自分の駒のMPを+1。',kind:'speed'}
 };
 K.seedPlates=function(){
   if(!K.s)return;
   K.s.p1plates=['xAttack','cassette','xSpeed'];
   K.s.p2plates=[];
   K.s.activePlate=null;
+  K.s.usedPlateThisTurn=false;
+};
+K.showPlateFlash=function(id){
+  const p=K.PLATES[id];
+  if(!p)return;
+  let box=document.getElementById('plateFlash');
+  if(!box){box=document.createElement('div');box.id='plateFlash';box.className='plateFlash';document.body.appendChild(box);}
+  box.innerHTML='<div class="plateFlashCard"><img src="'+p.asset+'" alt="'+p.name+'"><div>'+p.name+'</div></div>';
+  box.classList.add('show');
+  window.setTimeout(()=>box.classList.remove('show'),760);
 };
 K.usePlate=function(id){
   if(!K.s||K.s.turn!=='p1'||K.s.win||K.s.locked||K.s.phase!=='idle')return;
+  if(K.s.usedPlateThisTurn){K.log('プレートは1ターンに1枚までです。');K.render&&K.render();return;}
   if(!K.s.p1plates||!K.s.p1plates.includes(id))return;
   K.s.activePlate={owner:'p1',id};
-  K.log('プレート「'+K.PLATES[id].name+'」を使います。次のバトルに反映されます。');
+  K.s.usedPlateThisTurn=true;
+  K.showPlateFlash&&K.showPlateFlash(id);
+  const msg=id==='xSpeed'?'次に動かす自分の駒のMPが+1されます。':'次のバトルに反映されます。';
+  K.log('プレート「'+K.PLATES[id].name+'」を使います。'+msg);
   K.render&&K.render();
 };
 K.consumeActivePlate=function(){
@@ -27,6 +41,7 @@ K.consumeActivePlate=function(){
   }
   K.log('プレート「'+K.PLATES[act.id].name+'」の効果が消費されました。');
   K.s.activePlate=null;
+  K.render&&K.render();
 };
 K.renderPlates=function(){
   const root=document.getElementById('plateTray');
@@ -35,7 +50,7 @@ K.renderPlates=function(){
   const cards=(K.s.p1plates||[]).map(id=>{
     const p=K.PLATES[id];
     const isActive=active===id;
-    const disabled=K.s.turn!=='p1'||!!K.s.win||K.s.locked||K.s.phase!=='idle';
+    const disabled=K.s.turn!=='p1'||!!K.s.win||K.s.locked||K.s.phase!=='idle'||(K.s.usedPlateThisTurn&&!isActive);
     return '<div class="plateCard'+(isActive?' active':'')+'">'
       +'<img class="plateArt" src="'+p.asset+'" alt="'+p.name+'">'
       +'<div class="plateName">'+p.name+'</div>'
@@ -43,7 +58,7 @@ K.renderPlates=function(){
       +'<button class="plateBtn" data-plate="'+id+'" '+(disabled?'disabled':'')+'>'+(isActive?'使用中':'使う')+'</button>'
       +'</div>';
   }).join('');
-  root.innerHTML='<div class="platesTitle"><span>プレート</span><span class="hintPlate">カードで次の行動を強化</span></div><div class="plateRow">'+cards+'</div>';
+  root.innerHTML='<div class="platesTitle"><span>プレート</span><span class="hintPlate">1ターン1枚 / 使用後に消費</span></div><div class="plateRow">'+cards+'</div>';
   root.querySelectorAll('[data-plate]').forEach(btn=>btn.onclick=()=>K.usePlate(btn.dataset.plate));
 };
 if(!K._plateRenderPatched){
@@ -64,13 +79,43 @@ if(!K._plateValuePatched){
     return v;
   };
 }
+if(!K._plateMpPatched){
+  K._plateMpPatched=true;
+  const eff0=K.effectiveMp;
+  K.effectiveMp=function(p,owner=K.s.turn){
+    let v=eff0?eff0(p,owner):Math.max(0,p.mp-(p.status&&p.status.mpMinus||0));
+    const act=K.s&&K.s.activePlate;
+    if(act&&act.id==='xSpeed'&&act.owner===owner&&p&&p.owner===owner&&K.canAct(p))v+=1;
+    return v;
+  };
+}
 if(!K._plateBattlePatched){
   K._plateBattlePatched=true;
   const battle0=K.resolveBattle;
   K.resolveBattle=function(a,d,as,ds,out){
-    const useNow=!!(K.s&&K.s.activePlate&&(K.s.activePlate.owner===a.owner||K.s.activePlate.owner===d.owner));
+    const act=K.s&&K.s.activePlate;
+    const useNow=!!(act&&(act.id==='xAttack'||act.id==='cassette')&&(act.owner===a.owner||act.owner===d.owner));
     battle0.apply(this,arguments);
     if(useNow)window.setTimeout(()=>K.consumeActivePlate&&K.consumeActivePlate(),0);
+  };
+}
+if(!K._plateMovePatched){
+  K._plateMovePatched=true;
+  const move0=K.movePiece;
+  K.movePiece=function(p,node){
+    const act=K.s&&K.s.activePlate;
+    const useNow=!!(act&&act.id==='xSpeed'&&act.owner===p.owner);
+    const ret=move0.apply(this,arguments);
+    if(useNow)window.setTimeout(()=>K.consumeActivePlate&&K.consumeActivePlate(),0);
+    return ret;
+  };
+  const deploy0=K.deploy;
+  K.deploy=function(p,node){
+    const act=K.s&&K.s.activePlate;
+    const useNow=!!(act&&act.id==='xSpeed'&&act.owner===p.owner);
+    const ret=deploy0.apply(this,arguments);
+    if(useNow)window.setTimeout(()=>K.consumeActivePlate&&K.consumeActivePlate(),0);
+    return ret;
   };
 }
 if(!K._plateTurnPatched){
@@ -81,7 +126,9 @@ if(!K._plateTurnPatched){
       K.log('プレート「'+K.PLATES[K.s.activePlate.id].name+'」は未使用のまま終了しました。');
       K.s.activePlate=null;
     }
+    const prev=K.s&&K.s.turn;
     end0.apply(this,arguments);
+    if(K.s&&prev!==K.s.turn&&K.s.turn==='p1')K.s.usedPlateThisTurn=false;
   };
 }
 })(window.KOMA);
