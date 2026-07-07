@@ -1,0 +1,22 @@
+window.KOMA=window.KOMA||{};
+(function(K){
+K.DEFAULT_AI_WEIGHTS={
+  goalNow:9000000,
+  blockGoal:7166160,
+  oppGoal:-3633940,
+  pc:986,
+  field:66,
+  goalDist:275,
+  goalThreat:46800,
+  cornerThreat:54000,
+  spawnBlock:3750,
+  ownSpawnBlocked:-13050,
+  center:-510,
+  surroundKill:25500,
+  surroundRisk:-50400,
+  battle:39,
+  statusInflict:20,
+  statusSuffer:-60,
+  tempo:441
+};
+})(window.KOMA);
