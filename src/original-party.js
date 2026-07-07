@@ -1,0 +1,113 @@
+window.KOMA=window.KOMA||{};
+(function(K){
+function M(c,n,d,s,e){return{c,n,d,s,e:e||null};}
+K.ORIGINAL_PARTY={
+  name:'カセット干渉コンボ',
+  concept:'カセットで一時強化し、押し流し・睡眠・すりぬけ・入れ替えで相手の形を崩してゴールする。',
+  p1:['modulyn','pushwyrm','sleepvine','gaiarmor','phasecat','luminelle'],
+  p2:['voidray','thornogre','mirrormoth','blastboar','stormrook','gaiarmor']
+};
+Object.assign(K.FIGURES,{
+  modulyn:{n:'モジュリン',mp:3,r:'OR',ability:{name:'カセット共鳴',text:'カセット系プレート使用中、カセット技が大きく強化されます。'},w:[
+    M('gold','クイックロード',30,18,{cassetteBoost:true}),
+    M('white','カセットビーム',60,30,{cassetteBoost:true}),
+    M('purple','モードハック',2,24,{swap:true}),
+    M('blue','リロードガード',0,16,{selfWait:1}),
+    M('miss','ミス',0,12)
+  ]},
+  pushwyrm:{n:'オシナガ',mp:2,r:'OR',ability:{name:'流線圧',text:'直線の押し流しで相手の配置を崩します。'},w:[
+    M('white','ラインプレス',70,30,{pushLine:true}),
+    M('purple','潮押し',2,24,{pushLine:true,wait:1}),
+    M('blue','うねりかわし',0,20),
+    M('white','からみつく',40,18,{mpMinus:1}),
+    M('miss','ミス',0,8)
+  ]},
+  sleepvine:{n:'ネムリネ',mp:2,r:'OR',ability:{name:'眠り床',text:'ねむりやどくで相手の進路を開けたり止めたりできます。'},w:[
+    M('purple','ねむり胞子',2,30,{condition:'sleep'}),
+    M('purple','どく糸',1,22,{condition:'poison'}),
+    M('white','つるのムチ',50,26),
+    M('blue','根を張る',0,14,{selfWait:1}),
+    M('miss','ミス',0,8)
+  ]},
+  gaiarmor:{n:'ガイアーマ',mp:1,r:'OR',ability:{name:'要塞核',text:'低速ですが守備とウェイト付与に強いゴール番です。'},w:[
+    M('blue','シェルター',0,34,{selfWait:1}),
+    M('white','ヘヴィバンカー',100,32),
+    M('purple','重力杭',2,22,{wait:2}),
+    M('miss','ミス',0,12)
+  ]},
+  phasecat:{n:'フェイズキャット',mp:3,r:'OR',ability:{name:'位相歩き',text:'このポケモン自身は他のポケモンを通過して移動できます。',passThrough:true},w:[
+    M('purple','フェイズスワップ',2,28,{swap:true}),
+    M('white','ムーンスクラッチ',60,28),
+    M('blue','残像',0,24),
+    M('purple','幻惑ノイズ',1,12,{condition:'confuse'}),
+    M('miss','ミス',0,8)
+  ]},
+  luminelle:{n:'ルミネル',mp:3,r:'OR',ability:{name:'光導線',text:'MP低下と金技でゴールルートを作る軽量アタッカー。'},w:[
+    M('gold','ライトスティング',40,26),
+    M('white','ルミナショット',70,28),
+    M('purple','プリズムネット',2,26,{mpMinus:1}),
+    M('blue','光膜',0,12),
+    M('miss','ミス',0,8)
+  ]},
+  voidray:{n:'ヴォイドレイ',mp:3,r:'BOSS',ability:{name:'虚空遊泳',text:'BOSS用。すりぬけでゴールラインを荒らします。',passThrough:true},w:[
+    M('purple','ブラックアウト',2,28,{condition:'confuse'}),
+    M('white','虚空線',70,30,{mpMinus:1}),
+    M('blue','位相反転',0,20),
+    M('gold','裂光',40,14),
+    M('miss','ミス',0,8)
+  ]},
+  thornogre:{n:'トゲオーガ',mp:2,r:'BOSS',w:[
+    M('white','トゲクラッシュ',90,32),
+    M('purple','いばら檻',2,28,{wait:1}),
+    M('purple','眠り棘',1,18,{condition:'sleep'}),
+    M('blue','硬化',0,14,{selfWait:1}),
+    M('miss','ミス',0,8)
+  ]},
+  mirrormoth:{n:'ミラーモス',mp:3,r:'BOSS',w:[
+    M('purple','ミラー交換',2,30,{swap:true}),
+    M('white','反射鱗粉',60,28,{condition:'confuse'}),
+    M('blue','鏡隠れ',0,24),
+    M('miss','ミス',0,18)
+  ]},
+  blastboar:{n:'ブラストボア',mp:2,r:'BOSS',w:[
+    M('white','爆裂突進',110,32),
+    M('white','ボムタックル',70,30,{pushLine:true}),
+    M('purple','煙幕圧',2,20,{wait:1}),
+    M('miss','ミス',0,18)
+  ]},
+  stormrook:{n:'ストームルーク',mp:3,r:'BOSS',ability:{name:'滑空',text:'隣のポケモンを飛び越えられます。',jump:true},w:[
+    M('gold','急降下',50,24),
+    M('white','嵐羽',80,28),
+    M('purple','風縛り',2,24,{mpMinus:1}),
+    M('blue','旋回',0,14),
+    M('miss','ミス',0,10)
+  ]}
+});
+if(!K._originalCassetteValuePatched){
+  K._originalCassetteValuePatched=true;
+  const base=K.baseValue;
+  K.baseValue=function(seg,p){
+    let v=base?base(seg,p):(seg&&seg.d||0);
+    const act=K.s&&K.s.activePlate;
+    if(act&&act.id==='cassette'&&act.owner===p.owner&&seg&&seg.e&&seg.e.cassetteBoost){
+      v+=p.fig==='modulyn'?30:15;
+    }
+    return v;
+  };
+}
+if(!K._originalBattleScorePatched){
+  K._originalBattleScorePatched=true;
+  const old=K.battleScore;
+  K.battleScore=function(a,d){
+    let s=old?old(a,d):0;
+    const f=K.FIGURES[a.fig];
+    if(f)for(const seg of f.w){
+      if(seg.e&&seg.e.cassetteBoost)s+=18;
+      if(seg.e&&seg.e.pushLine)s+=22;
+      if(seg.e&&seg.e.swap)s+=15;
+      if(seg.e&&seg.e.condition==='sleep')s+=18;
+    }
+    return s;
+  };
+}
+})(window.KOMA);
