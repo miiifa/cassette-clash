@@ -27,6 +27,8 @@ window.KOMA=window.KOMA||{};
   };
   const placeBase=K.placePiece;
   K.placePiece=function(p,node,from){
+    const turnBefore=K.s&&K.s.turn;
+    const countBefore=K.s&&K.s.turnCount;
     try{
       placeBase.apply(this,arguments);
     }catch(e){
@@ -37,7 +39,9 @@ window.KOMA=window.KOMA||{};
       return;
     }
     setTimeout(()=>{
-      if(!K.s||K.s.win||K.s.locked||!p||p.owner!=='p1'||K.s.turn!=='p1')return;
+      if(!K.s||K.s.win||K.s.locked||!p||p.owner!=='p1')return;
+      if(turnBefore!=='p1')return;
+      if(K.s.turn!==turnBefore||K.s.turnCount!==countBefore)return;
       if(K.s.phase==='chooseBattle'){
         const a=K.byId(K.s.pendingAttacker||K.s.selectedId);
         if(a&&K.battleableEnemies(a).length)return;
