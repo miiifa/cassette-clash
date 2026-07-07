@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 420" role="img" aria-label="フェイズカセット">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#020617"/>
+      <stop offset="55%" stop-color="#4c1d95"/>
+      <stop offset="100%" stop-color="#0e7490"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#67e8f9"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="280" height="400" rx="24" fill="url(#bg)" stroke="#f8fafc" stroke-width="6"/>
+  <rect x="28" y="28" width="244" height="364" rx="18" fill="none" stroke="url(#edge)" stroke-width="3" opacity="0.9"/>
+  <g opacity="0.9">
+    <rect x="82" y="120" width="136" height="110" rx="18" fill="#0f172a" stroke="#67e8f9" stroke-width="7"/>
+    <path d="M108 154 H192 M108 184 H192" stroke="#c084fc" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="122" cy="214" r="13" fill="#cffafe"/>
+    <circle cx="178" cy="214" r="13" fill="#e9d5ff"/>
+  </g>
+  <path d="M70 260 C122 216, 170 304, 230 246" fill="none" stroke="#f8fafc" stroke-width="10" stroke-linecap="round" opacity="0.9"/>
+  <path d="M213 238 L239 244 L222 266" fill="#f8fafc"/>
+  <text x="150" y="64" text-anchor="middle" font-size="26" font-weight="700" fill="#e9d5ff">CASSETTE</text>
+  <text x="150" y="330" text-anchor="middle" font-size="30" font-weight="800" fill="#ecfeff">フェイズ</text>
+  <text x="150" y="364" text-anchor="middle" font-size="18" font-weight="600" fill="#dbeafe">1回だけすりぬけ</text>
+</svg>
