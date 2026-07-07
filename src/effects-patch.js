@@ -11,37 +11,43 @@ function patchData(){
     }
   }
 }
-function nextAway(prev,cur,from){
-  if(!K.NODES[cur]||!K.NODES[from])return null;
-  const [fx,fy]=K.NODES[from],[cx,cy]=K.NODES[cur];
-  const dx=cx-fx,dy=cy-fy;
-  let best=null,bestScore=-Infinity;
+function unit(v){return Math.abs(v)<0.001?0:(v>0?1:-1);}
+function dirOf(a,b){
+  if(!K.NODES[a]||!K.NODES[b])return null;
+  const [ax,ay]=K.NODES[a],[bx,by]=K.NODES[b];
+  return [unit(bx-ax),unit(by-ay)];
+}
+function sameDir(a,b){return a&&b&&a[0]===b[0]&&a[1]===b[1];}
+function nextStraight(prev,cur,dir){
+  let best=null,bestLen=Infinity;
+  const [cx,cy]=K.NODES[cur];
   for(const n of K.neigh(cur)){
     if(n===prev)continue;
+    const nd=dirOf(cur,n);
+    if(!sameDir(nd,dir))continue;
     const [nx,ny]=K.NODES[n];
-    const vx=nx-cx,vy=ny-cy;
-    const away=(nx-fx)*(nx-fx)+(ny-fy)*(ny-fy)-((cx-fx)*(cx-fx)+(cy-fy)*(cy-fy));
-    const score=vx*dx+vy*dy+away*.35;
-    if(away>=-1&&score>bestScore){best=n;bestScore=score;}
+    const len=(nx-cx)*(nx-cx)+(ny-cy)*(ny-cy);
+    if(len<bestLen){best=n;bestLen=len;}
   }
   return best;
 }
 K.pushLine=function(user,target,done){
   if(!user||!target||!user.pos||!target.pos){done&&done();return;}
+  const dir=dirOf(user.pos,target.pos);
+  if(!dir||dir[0]===0&&dir[1]===0){done&&done();return;}
   const chain=[target.pos];
   let prev=user.pos,cur=target.pos;
-  for(let i=0;i<12;i++){
-    const nx=nextAway(prev,cur,user.pos);
+  for(let i=0;i<8;i++){
+    const nx=nextStraight(prev,cur,dir);
     if(!nx||chain.includes(nx))break;
     chain.push(nx);prev=cur;cur=nx;
   }
-  const occ=chain.map(n=>K.at(n)).filter(Boolean);
+  const occ=[];
+  for(const n of chain){const p=K.at(n);if(p)occ.push(p);}
   if(!occ.length){done&&done();return;}
   const dest=chain.slice(Math.max(0,chain.length-occ.length));
   const moved=[];
-  for(let i=0;i<occ.length;i++){
-    if(occ[i].pos!==dest[i])moved.push(occ[i]);
-  }
+  for(let i=0;i<occ.length;i++)if(occ[i].pos!==dest[i])moved.push(occ[i]);
   if(!moved.length){K.log(target.n+'は押し流されませんでした。');done&&done();return;}
   K.s.fx=K.s.fx||{};
   for(const p of moved)K.s.fx[p.id]={cls:'fx-push'};
@@ -49,7 +55,7 @@ K.pushLine=function(user,target,done){
   window.setTimeout(()=>{
     for(let i=0;i<occ.length;i++)occ[i].pos=dest[i];
     for(const p of moved)if(K.s.fx)delete K.s.fx[p.id];
-    K.log(target.n+'たちは後方へ押し流されました。');
+    K.log(target.n+'たちは直線方向へ押し流されました。');
     K.resolveSurrounds&&K.resolveSurrounds();
     K.render&&K.render();
     done&&done();
@@ -78,7 +84,7 @@ K.battleScore=function(a,d){
       if(!seg.e||seg.c==='miss')continue;
       const rate=(seg.s||0)/100;
       if(seg.e.bench)b+=rate*170;
-      if(seg.e.pushLine)b+=rate*210;
+      if(seg.e.pushLine)b+=rate*160;
       if(seg.e.swap)b+=rate*90;
       if(seg.e.condition)b+=rate*65;
       if(seg.e.mpMinus)b+=rate*55;
