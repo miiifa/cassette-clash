@@ -14,7 +14,7 @@ K.restoreFigureAbilities=function(){
 };
 K.setBossDecks=function(){
   K.DECKS={
-    p1:['pikachu','squirtle','bulbasaur','gengar','koko','greninja'],
+    p1:['deoxysA','deoxysD','mewtwo','gengar','koko','rotom'],
     p2:['koko','gengar','rotom','greninja','mewtwo','deoxysD']
   };
 };
@@ -47,7 +47,14 @@ if(!K._bossBaseValuePatched){
     return v;
   };
 }
-K.start=function(){K.restoreFigureAbilities&&K.restoreFigureAbilities();K.setBossDecks&&K.setBossDecks();K.initState();K.applyBossBuffs&&K.applyBossBuffs();K.render();};
+K.start=function(){
+  K.restoreFigureAbilities&&K.restoreFigureAbilities();
+  K.setBossDecks&&K.setBossDecks();
+  K.initState();
+  K.applyBossBuffs&&K.applyBossBuffs();
+  K.seedPlates&&K.seedPlates();
+  K.render();
+};
 function loadCss(href){const l=document.createElement('link');l.rel='stylesheet';l.href=href;document.head.appendChild(l);}
 function loadScript(src,done){const s=document.createElement('script');s.src=src;s.onload=done;s.onerror=done;document.body.appendChild(s);}
 window.addEventListener('DOMContentLoaded',()=>{
