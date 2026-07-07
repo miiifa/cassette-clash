@@ -2,12 +2,13 @@ window.KOMA=window.KOMA||{};
 (function(K){
 K.PLATES={
   xAttack:{name:'Xアタック',asset:'assets/plates/x-attack.svg',desc:'次の白/金ワザのダメージを+20。',kind:'boost'},
-  cassette:{name:'カセット',asset:'assets/plates/cassette.svg',desc:'次の白/金ワザのダメージを+10。',kind:'boostSmall'},
+  cassette:{name:'パワーカセット',asset:'assets/plates/cassette.svg',desc:'次の白/金ワザ+10。カセット技はさらに強化。',kind:'cassettePower'},
+  phaseCassette:{name:'フェイズカセット',asset:'assets/plates/phase-cassette.svg',desc:'次に動かす駒が1回だけすりぬけ移動。',kind:'cassettePhase'},
   xSpeed:{name:'Xスピード',asset:'assets/plates/x-speed.svg',desc:'このターン、次に動かす自分の駒のMPを+1。',kind:'speed'}
 };
 K.seedPlates=function(){
   if(!K.s)return;
-  K.s.p1plates=['xAttack','cassette','xSpeed'];
+  K.s.p1plates=['xAttack','cassette','phaseCassette','xSpeed'];
   K.s.p2plates=[];
   K.s.activePlate=null;
   K.s.usedPlateThisTurn=false;
@@ -28,7 +29,10 @@ K.usePlate=function(id){
   K.s.activePlate={owner:'p1',id};
   K.s.usedPlateThisTurn=true;
   K.showPlateFlash&&K.showPlateFlash(id);
-  const msg=id==='xSpeed'?'次に動かす自分の駒のMPが+1されます。':'次のバトルに反映されます。';
+  let msg='次のバトルに反映されます。';
+  if(id==='xSpeed')msg='次に動かす自分の駒のMPが+1されます。';
+  if(id==='phaseCassette')msg='次に動かす自分の駒が1回だけすりぬけ移動できます。';
+  if(id==='cassette')msg='次の白/金ワザが強化され、カセット技は追加で強くなります。';
   K.log('プレート「'+K.PLATES[id].name+'」を使います。'+msg);
   K.render&&K.render();
 };
@@ -58,7 +62,7 @@ K.renderPlates=function(){
       +'<button class="plateBtn" data-plate="'+id+'" '+(disabled?'disabled':'')+'>'+(isActive?'使用中':'使う')+'</button>'
       +'</div>';
   }).join('');
-  root.innerHTML='<div class="platesTitle"><span>プレート</span><span class="hintPlate">1ターン1枚 / 使用後に消費</span></div><div class="plateRow">'+cards+'</div>';
+  root.innerHTML='<div class="platesTitle"><span>プレート</span><span class="hintPlate">1ターン1枚 / カセット連携あり</span></div><div class="plateRow">'+cards+'</div>';
   root.querySelectorAll('[data-plate]').forEach(btn=>btn.onclick=()=>K.usePlate(btn.dataset.plate));
 };
 if(!K._plateRenderPatched){
@@ -89,6 +93,25 @@ if(!K._plateMpPatched){
     return v;
   };
 }
+if(!K._phaseCassetteMovePatched){
+  K._phaseCassetteMovePatched=true;
+  const blocked0=K.blockedFor;
+  K.blockedFor=function(p){
+    const act=K.s&&K.s.activePlate;
+    if(act&&act.id==='phaseCassette'&&p&&p.owner===act.owner)return new Set();
+    return blocked0?blocked0(p):new Set();
+  };
+  const entry0=K.entryTargets;
+  K.entryTargets=function(p,owner){
+    const act=K.s&&K.s.activePlate;
+    if(act&&act.id==='phaseCassette'&&p&&p.owner===act.owner){
+      const f=K.FIGURES[p.fig],old=f.ability;
+      f.ability=Object.assign({},old||{},{passThrough:true});
+      try{return entry0.call(this,p,owner);}finally{f.ability=old;}
+    }
+    return entry0.call(this,p,owner);
+  };
+}
 if(!K._plateBattlePatched){
   K._plateBattlePatched=true;
   const battle0=K.resolveBattle;
@@ -104,7 +127,7 @@ if(!K._plateMovePatched){
   const move0=K.movePiece;
   K.movePiece=function(p,node){
     const act=K.s&&K.s.activePlate;
-    const useNow=!!(act&&act.id==='xSpeed'&&act.owner===p.owner);
+    const useNow=!!(act&&(act.id==='xSpeed'||act.id==='phaseCassette')&&act.owner===p.owner);
     const ret=move0.apply(this,arguments);
     if(useNow)window.setTimeout(()=>K.consumeActivePlate&&K.consumeActivePlate(),0);
     return ret;
@@ -112,7 +135,7 @@ if(!K._plateMovePatched){
   const deploy0=K.deploy;
   K.deploy=function(p,node){
     const act=K.s&&K.s.activePlate;
-    const useNow=!!(act&&act.id==='xSpeed'&&act.owner===p.owner);
+    const useNow=!!(act&&(act.id==='xSpeed'||act.id==='phaseCassette')&&act.owner===p.owner);
     const ret=deploy0.apply(this,arguments);
     if(useNow)window.setTimeout(()=>K.consumeActivePlate&&K.consumeActivePlate(),0);
     return ret;
