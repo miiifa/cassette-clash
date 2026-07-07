@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 420" role="img" aria-label="カセット">
+  <defs>
+    <linearGradient id="bg2" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="chip" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="280" height="400" rx="24" fill="url(#bg2)" stroke="#f8fafc" stroke-width="6"/>
+  <rect x="28" y="28" width="244" height="364" rx="18" fill="none" stroke="#c4b5fd" stroke-width="2" opacity="0.8"/>
+  <rect x="88" y="112" width="124" height="118" rx="18" fill="#0f172a" stroke="url(#chip)" stroke-width="8"/>
+  <rect x="116" y="98" width="68" height="28" rx="10" fill="#f8fafc" opacity="0.9"/>
+  <circle cx="122" cy="170" r="18" fill="#e0f2fe"/>
+  <circle cx="178" cy="170" r="18" fill="#e0f2fe"/>
+  <rect x="112" y="196" width="76" height="14" rx="7" fill="#a5f3fc"/>
+  <text x="150" y="64" text-anchor="middle" font-size="26" font-weight="700" fill="#e9d5ff">PLATE</text>
+  <text x="150" y="330" text-anchor="middle" font-size="34" font-weight="800" fill="#ede9fe">カセット</text>
+  <text x="150" y="364" text-anchor="middle" font-size="18" font-weight="600" fill="#dbeafe">次の白/金ワザ +10</text>
+</svg>
