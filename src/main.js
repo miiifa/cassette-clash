@@ -7,11 +7,14 @@ K.restoreFigureAbilities=function(){
   if(K.FIGURES.rotom){
     K.FIGURES.rotom.ability={name:'ふゆう',text:'このポケモン自身は他のポケモンを通過して移動できます。ただし他のポケモンがこのポケモンを通過できるわけではありません。',passThrough:true};
   }
+  if(K.FIGURES.greninja){
+    K.FIGURES.greninja.ability=null;
+  }
   K.isPassThrough=p=>p.status.condition==='sleep'||p.status.condition==='frozen';
 };
 K.setBossDecks=function(){
   K.DECKS={
-    p1:['pikachu','charmander','squirtle','bulbasaur','gengar','koko'],
+    p1:['pikachu','squirtle','bulbasaur','gengar','koko','greninja'],
     p2:['koko','gengar','rotom','greninja','mewtwo','deoxysD']
   };
 };
