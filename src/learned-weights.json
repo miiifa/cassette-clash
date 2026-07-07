@@ -1,0 +1,19 @@
+{
+  "goalNow": 1000000,
+  "blockGoal": 900000,
+  "oppGoal": -950000,
+  "pc": 520,
+  "field": 105,
+  "goalDist": 32,
+  "goalThreat": 5200,
+  "cornerThreat": 18000,
+  "spawnBlock": 1250,
+  "ownSpawnBlocked": -1450,
+  "center": 170,
+  "surroundKill": 8500,
+  "surroundRisk": -5600,
+  "battle": 13,
+  "statusInflict": 4,
+  "statusSuffer": -5,
+  "tempo": 90
+}
