@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>コマスター オフライン</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-patch.css">
 </head>
 <body>
   <header class="topbar">
     <div>
       <h1>コマスター</h1>
-      <div class="sub">分割・安定版</div>
+      <div class="sub">分割・学習AI版</div>
     </div>
     <button id="resetBtn" class="reset">リセット</button>
   </header>
@@ -37,10 +38,12 @@
         <button class="action surrender" disabled>投了</button>
         <button id="skipAction" class="action ability" disabled>バトルしない</button>
         <button id="aiBtn" class="action ai">AI ON</button>
+        <button id="trainAiBtn" class="action learn">AI学習</button>
+        <button id="resetLearnBtn" class="action learnReset">学習リセット</button>
       </div>
 
       <div class="hint">
-        フォルダごと保存して index.html を開けばローカル実行できます。長押しで技確認。眠り/氷は通過可、眠りは味方隣接タッチで回復。バトル結果は自分で閉じます。
+        フォルダごと保存して index.html を開けばローカル実行できます。<b>AI学習</b>でブラウザ内の簡易トレーニングを回し、重みはlocalStorageに保存されます。対局結果も少しずつ学習に反映します。
       </div>
     </section>
     <div id="log" class="log"></div>
@@ -79,9 +82,12 @@
   <script src="src/data.js"></script>
   <script src="src/state.js"></script>
   <script src="src/rules.js"></script>
+  <script src="src/ai-weights.js"></script>
   <script src="src/ai.js"></script>
+  <script src="src/ai-learn-patch.js"></script>
   <script src="src/ui.js"></script>
   <script src="src/ui-patch.js"></script>
+  <script src="src/ai-train.js"></script>
   <script src="src/main.js"></script>
 </body>
 </html>
