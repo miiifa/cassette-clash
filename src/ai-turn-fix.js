@@ -1,6 +1,6 @@
 window.KOMA=window.KOMA||{};
 (function(K){
-K.DECKS={p1:['pikachu','squirtle','bulbasaur','gengar','koko','greninja'],p2:['koko','gengar','rotom','greninja','mewtwo','deoxysD']};
+K.DECKS={p1:['modulyn','pushwyrm','sleepvine','gaiarmor','phasecat','luminelle'],p2:['voidray','thornogre','mirrormoth','blastboar','stormrook','gaiarmor']};
 function dist(a,b){if(a===b)return 0;const q=[a],m=new Map([[a,0]]);while(q.length){const c=q.shift(),d=m.get(c);for(const n of K.neigh(c)){if(m.has(n))continue;if(n===b)return d+1;m.set(n,d+1);q.push(n);}}return 99;}
 function pieces(){return[...K.s.p1.bench,...K.s.p1.field,...K.s.p1.pc,...K.s.p2.bench,...K.s.p2.field,...K.s.p2.pc];}
 function legal(o){const r=[];for(const p of K.s[o].field.slice()){try{if(K.canWakeByAlly(p))r.push({type:'wake',p});if(!K.canAct(p))continue;for(const x of K.battleableEnemies(p))r.push({type:'battle',p,d:x});for(const n of K.moveTargets(p,o))r.push({type:'move',p,n});}catch(e){}}for(const p of K.s[o].bench.slice()){try{for(const n of K.entryTargets(p,o))r.push({type:'deploy',p,n});}catch(e){}}return r;}
@@ -47,7 +47,7 @@ function score(p){
     }
     if(K.ability&&K.ability(p.p,'jump'))s+=12000;
     if(K.ability&&K.ability(p.p,'passThrough'))s+=26000;
-    if(p.type==='deploy'&&(p.p.fig==='koko'||p.p.fig==='gengar'||p.p.fig==='rotom'||p.p.fig==='greninja'))s+=90000;
+    if(p.type==='deploy'&&(p.p.fig==='voidray'||p.p.fig==='stormrook'||p.p.fig==='mirrormoth'||p.p.fig==='blastboar'))s+=90000;
     return s;
   }
   if(p.type==='wake')return 30000;
