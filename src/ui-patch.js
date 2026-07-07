@@ -1,5 +1,10 @@
 window.KOMA=window.KOMA||{};
 (function(K){
+  K.tickWait=function(owner){
+    if(!K.s||!K.s[owner])return;
+    const pieces=[...K.s[owner].bench,...K.s[owner].field];
+    for(const p of pieces)if(p.wait>0)p.wait--;
+  };
   const baseRender=K.render;
   K.render=function(){
     baseRender&&baseRender();
@@ -22,7 +27,15 @@ window.KOMA=window.KOMA||{};
   };
   const placeBase=K.placePiece;
   K.placePiece=function(p,node,from){
-    placeBase.apply(this,arguments);
+    try{
+      placeBase.apply(this,arguments);
+    }catch(e){
+      K.log('ターン処理エラーを修復: '+e.message);
+      K.s.locked=false;
+      K.s.phase='idle';
+      K.endTurn();
+      return;
+    }
     setTimeout(()=>{
       if(!K.s||K.s.win||K.s.locked||!p||p.owner!=='p1'||K.s.turn!=='p1')return;
       if(K.s.phase==='chooseBattle'){
