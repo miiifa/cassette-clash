@@ -9,11 +9,18 @@ K.restoreFigureAbilities=function(){
   }
   K.isPassThrough=p=>p.status.condition==='sleep'||p.status.condition==='frozen';
 };
-K.start=function(){K.restoreFigureAbilities&&K.restoreFigureAbilities();K.initState();K.render();};
+K.setBossDecks=function(){
+  K.DECKS={
+    p1:['pikachu','charmander','squirtle','bulbasaur','gengar','koko'],
+    p2:['koko','gengar','rotom','greninja','mewtwo','deoxysD']
+  };
+};
+K.start=function(){K.restoreFigureAbilities&&K.restoreFigureAbilities();K.setBossDecks&&K.setBossDecks();K.initState();K.render();};
 function loadCss(href){const l=document.createElement('link');l.rel='stylesheet';l.href=href;document.head.appendChild(l);}
 function loadScript(src,done){const s=document.createElement('script');s.src=src;s.onload=done;s.onerror=done;document.body.appendChild(s);}
 window.addEventListener('DOMContentLoaded',()=>{
   K.restoreFigureAbilities&&K.restoreFigureAbilities();
+  K.setBossDecks&&K.setBossDecks();
   loadCss('learning-ui.css');
   loadScript('src/ai-defaults.js',()=>{
     loadScript('src/lw.js',()=>{
