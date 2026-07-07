@@ -25,34 +25,45 @@ window.KOMA=window.KOMA||{};
       }
     }
   };
-  const placeBase=K.placePiece;
   K.placePiece=function(p,node,from){
-    const turnBefore=K.s&&K.s.turn;
-    const countBefore=K.s&&K.s.turnCount;
-    try{
-      placeBase.apply(this,arguments);
-    }catch(e){
-      K.log('ターン処理エラーを修復: '+e.message);
+    p.pos=node;
+    K.setFx(p,from,node);
+
+    // 重要: ゴール勝利より先に包囲判定。
+    // ゴール上に乗っても、その瞬間に包囲されていればPC送りで勝利しない。
+    K.resolveSurrounds();
+
+    if(!K.s[p.owner].field.includes(p)){
       K.s.locked=false;
-      K.s.phase='idle';
       K.endTurn();
       return;
     }
-    setTimeout(()=>{
-      if(!K.s||K.s.win||K.s.locked||!p||p.owner!=='p1')return;
-      if(turnBefore!=='p1')return;
-      if(K.s.turn!==turnBefore||K.s.turnCount!==countBefore)return;
-      if(K.s.phase==='chooseBattle'){
-        const a=K.byId(K.s.pendingAttacker||K.s.selectedId);
-        if(a&&K.battleableEnemies(a).length)return;
-        K.log('バトル相手がいないためターン終了。');
-        K.endTurn();
-        return;
-      }
-      if(K.s.phase==='idle'||K.s.phase==='chooseTarget'){
-        K.log('行動完了。AIターンへ。');
-        K.endTurn();
-      }
-    },80);
+
+    if(node===K.TARGET[p.owner]){
+      K.s.win=p.owner;
+      K.clearSelection();
+      K.s.locked=false;
+      K.log(p.n+'がゴールしました。'+p.owner+'の勝利！');
+      K.render&&K.render();
+      return;
+    }
+
+    const enemies=K.battleableEnemies(p);
+    if(enemies.length){
+      K.s.locked=false;
+      K.s.phase='chooseBattle';
+      K.s.pendingAttacker=p.id;
+      K.s.selectedId=null;
+      K.s.selectedType=null;
+      K.s.targets=[];
+      K.s.attacks=enemies.map(e=>e.pos);
+      K.log('隣接敵を選ぶとバトルします。戦わない場合は「バトルしない」。');
+      K.render&&K.render();
+      if(p.owner==='p2'&&K.s.ai)window.setTimeout(()=>K.aiChooseEnemy(),350);
+      return;
+    }
+
+    K.s.locked=false;
+    K.endTurn();
   };
 })(window.KOMA);
