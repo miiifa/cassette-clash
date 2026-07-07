@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 420" role="img" aria-label="Xスピード">
+  <defs>
+    <linearGradient id="bg3" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#082f49"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="280" height="400" rx="24" fill="url(#bg3)" stroke="#f8fafc" stroke-width="6"/>
+  <rect x="28" y="28" width="244" height="364" rx="18" fill="none" stroke="#a5f3fc" stroke-width="2" opacity="0.8"/>
+  <circle cx="150" cy="168" r="68" fill="#ecfeff" opacity="0.18"/>
+  <path d="M90 195 C140 110, 180 110, 210 145" fill="none" stroke="#f8fafc" stroke-width="10" stroke-linecap="round"/>
+  <path d="M176 132 L220 142 L194 180" fill="#f8fafc"/>
+  <circle cx="112" cy="220" r="16" fill="#f8fafc"/>
+  <circle cx="152" cy="220" r="16" fill="#f8fafc" opacity="0.8"/>
+  <circle cx="192" cy="220" r="16" fill="#f8fafc" opacity="0.6"/>
+  <text x="150" y="64" text-anchor="middle" font-size="26" font-weight="700" fill="#cffafe">PLATE</text>
+  <text x="150" y="330" text-anchor="middle" font-size="34" font-weight="800" fill="#ecfeff">Xスピード</text>
+  <text x="150" y="364" text-anchor="middle" font-size="18" font-weight="600" fill="#e0f2fe">移動強化アセット</text>
+</svg>
