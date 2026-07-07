@@ -1,0 +1,17 @@
+window.KOMA=window.KOMA||{};
+(function(K){
+K.aiTraining={decisions:[],games:0,lastLearned:null};
+function keys(){return Object.keys(K.DEFAULT_AI_WEIGHTS||{});}
+function save(w){return K.saveAiWeights?K.saveAiWeights(w):w;}
+function get(){return K.getAiWeights?K.getAiWeights():JSON.parse(JSON.stringify(K.DEFAULT_AI_WEIGHTS||{}));}
+K.recordAiDecision=function(feat,score){if(!K.aiTraining)K.aiTraining={decisions:[],games:0};K.aiTraining.decisions.push({feat:feat||{},score:score||0});if(K.aiTraining.decisions.length>80)K.aiTraining.decisions.shift();};
+K.learnFromOutcome=function(winner){if(!K.aiTraining||!K.aiTraining.decisions.length)return;const reward=winner==='p2'?1:winner==='p1'?-1:0;if(!reward)return;const W=get(),base=K.DEFAULT_AI_WEIGHTS,lr=.018;for(const d of K.aiTraining.decisions){for(const k of keys()){const x=Number(d.feat[k]||0);if(!x)continue;const scale=Math.max(1,Math.abs(base[k]||1));W[k]+=reward*x*scale*lr;}}save(W);K.aiTraining.games=(K.aiTraining.games||0)+1;K.aiTraining.decisions=[];K.log('AI学習: 対局結果 '+winner+' を反映しました。学習ゲーム数 '+K.aiTraining.games);};
+function sampleFeature(){const r=Math.random,feat={};for(const k of keys())feat[k]=0;const mode=Math.floor(r()*7);feat.tempo=1;if(mode===0)feat.goalNow=1;if(mode===1){feat.blockGoal=1;feat.oppGoal=1;}if(mode===2){feat.battle=r()*2-0.4;feat.statusInflict=r();feat.statusSuffer=r()*.7;}if(mode===3){feat.surroundKill=r();feat.surroundRisk=r()*1.6;}if(mode===4){feat.goalDist=r();feat.goalThreat=r()>.55?1:0;feat.cornerThreat=r()>.82?1:0;}if(mode===5){feat.spawnBlock=r()>.4?1:0;feat.ownSpawnBlocked=r()>.55?1:0;}if(mode===6){feat.center=r();feat.field=r()*2-1;feat.pc=r()*2-1;}return feat;}
+function expert(feat){let s=0;if(feat.goalNow)s+=100;if(feat.blockGoal&&feat.oppGoal)s+=95;if(feat.oppGoal&&!feat.blockGoal)s-=100;s+=feat.goalDist*15+feat.goalThreat*35+feat.cornerThreat*45;s+=feat.spawnBlock*22-feat.ownSpawnBlocked*35;s+=feat.surroundKill*45-feat.surroundRisk*38;s+=feat.battle*18+feat.statusInflict*10-feat.statusSuffer*12;s+=feat.center*8+feat.pc*8+feat.field*4;return s;}
+function predict(feat,W){let s=0;for(const k of keys())s+=(W[k]||0)*(feat[k]||0)/Math.max(1,Math.abs((K.DEFAULT_AI_WEIGHTS||{})[k]||1));return s;}
+K.runLocalTraining=function(rounds){rounds=rounds||600;const W=get(),base=K.DEFAULT_AI_WEIGHTS,rate=.08;let err=0;for(let i=0;i<rounds;i++){const feat=sampleFeature(),y=expert(feat),p=predict(feat,W),e=y-p;err+=Math.abs(e);for(const k of keys()){const x=feat[k]||0;if(!x)continue;W[k]+=e*x*rate*Math.max(1,Math.abs(base[k]||1))/100;}}save(W);const avg=Math.round(err/rounds);K.log('AI簡易学習: '+rounds+' サンプル完了 / 平均誤差 '+avg+' / 重み保存済み');K.render&&K.render();};
+K.resetLocalTraining=function(){K.resetAiWeights&&K.resetAiWeights();if(K.aiTraining)K.aiTraining.decisions=[];K.log('AI学習重みを初期化しました。');K.render&&K.render();};
+const oldRenderSetter=function(){if(!K.render||K.render._learnHook)return;const baseRender=K.render;K.render=function(){baseRender();if(K.s&&K.s.win&&!K.s._learned){K.s._learned=true;K.learnFromOutcome&&K.learnFromOutcome(K.s.win);}};K.render._learnHook=true;};
+const oldBind=K.bindUi;
+K.bindUi=function(){oldBind&&oldBind();const train=document.querySelector('#trainAiBtn'),reset=document.querySelector('#resetLearnBtn');if(train)train.onclick=function(){K.runLocalTraining(800);};if(reset)reset.onclick=function(){K.resetLocalTraining();};oldRenderSetter();};
+})(window.KOMA);
