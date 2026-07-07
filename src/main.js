@@ -16,7 +16,9 @@ window.addEventListener('DOMContentLoaded',()=>{
   K.restoreFigureAbilities&&K.restoreFigureAbilities();
   loadCss('learning-ui.css');
   loadScript('src/ai-defaults.js',()=>{
-    loadScript('src/learning-ui.js',()=>{K.bindUi();K.start();});
+    loadScript('src/lw.js',()=>{
+      loadScript('src/learning-ui.js',()=>{K.bindUi();K.start();});
+    });
   });
 });
 })(window.KOMA);
