@@ -14,7 +14,7 @@ K.restoreFigureAbilities=function(){
 };
 K.setBossDecks=function(){
   K.DECKS={
-    p1:['deoxysA','deoxysD','mewtwo','gengar','koko','rotom'],
+    p1:['mewtwo','bulbasaur','deoxysD','gengar','rotom','koko'],
     p2:['koko','gengar','rotom','greninja','mewtwo','deoxysD']
   };
 };
