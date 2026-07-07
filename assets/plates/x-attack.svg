@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 420" role="img" aria-label="Xアタック">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="280" height="400" rx="24" fill="url(#bg)" stroke="#f8fafc" stroke-width="6"/>
+  <rect x="28" y="28" width="244" height="364" rx="18" fill="none" stroke="#93c5fd" stroke-width="2" opacity="0.8"/>
+  <circle cx="150" cy="158" r="72" fill="url(#glow)" opacity="0.95"/>
+  <path d="M132 115 L92 205 H140 L122 285 L208 178 H162 L188 115 Z" fill="#fff7ed" stroke="#7c2d12" stroke-width="6" stroke-linejoin="round"/>
+  <text x="150" y="64" text-anchor="middle" font-size="26" font-weight="700" fill="#e2e8f0">PLATE</text>
+  <text x="150" y="330" text-anchor="middle" font-size="34" font-weight="800" fill="#fef3c7">Xアタック</text>
+  <text x="150" y="364" text-anchor="middle" font-size="18" font-weight="600" fill="#dbeafe">次の白/金ワザ +20</text>
+</svg>
