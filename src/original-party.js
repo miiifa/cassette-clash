@@ -83,31 +83,33 @@ Object.assign(K.FIGURES,{
     M('miss','ミス',0,10)
   ]}
 });
-if(!K._originalCassetteValuePatched){
-  K._originalCassetteValuePatched=true;
-  const base=K.baseValue;
-  K.baseValue=function(seg,p){
-    let v=base?base(seg,p):(seg&&seg.d||0);
-    const act=K.s&&K.s.activePlate;
-    if(act&&act.id==='cassette'&&act.owner===p.owner&&seg&&seg.e&&seg.e.cassetteBoost){
-      v+=p.fig==='modulyn'?30:15;
-    }
-    return v;
-  };
-}
-if(!K._originalBattleScorePatched){
-  K._originalBattleScorePatched=true;
-  const old=K.battleScore;
-  K.battleScore=function(a,d){
-    let s=old?old(a,d):0;
-    const f=K.FIGURES[a.fig];
-    if(f)for(const seg of f.w){
-      if(seg.e&&seg.e.cassetteBoost)s+=18;
-      if(seg.e&&seg.e.pushLine)s+=22;
-      if(seg.e&&seg.e.swap)s+=15;
-      if(seg.e&&seg.e.condition==='sleep')s+=18;
-    }
-    return s;
-  };
-}
+K.installOriginalPartyPatches=function(){
+  if(!K._originalCassetteValuePatched){
+    K._originalCassetteValuePatched=true;
+    const base=K.baseValue;
+    K.baseValue=function(seg,p){
+      let v=base?base(seg,p):(seg&&seg.d||0);
+      const act=K.s&&K.s.activePlate;
+      if(act&&act.id==='cassette'&&p&&act.owner===p.owner&&seg&&seg.e&&seg.e.cassetteBoost){
+        v+=p.fig==='modulyn'?30:15;
+      }
+      return v;
+    };
+  }
+  if(!K._originalBattleScorePatched){
+    K._originalBattleScorePatched=true;
+    const old=K.battleScore;
+    K.battleScore=function(a,d){
+      let s=old?old(a,d):0;
+      const f=K.FIGURES[a.fig];
+      if(f)for(const seg of f.w){
+        if(seg.e&&seg.e.cassetteBoost)s+=18;
+        if(seg.e&&seg.e.pushLine)s+=22;
+        if(seg.e&&seg.e.swap)s+=15;
+        if(seg.e&&seg.e.condition==='sleep')s+=18;
+      }
+      return s;
+    };
+  }
+};
 })(window.KOMA);
