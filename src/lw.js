@@ -1,1 +1,2 @@
 window.KOMA.DEFAULT_AI_WEIGHTS={goalNow:15000000,blockGoal:11564000,oppGoal:-6000000,pc:2235,field:93,goalDist:821,goalThreat:100000,cornerThreat:54000,spawnBlock:4500,ownSpawnBlocked:-39150,center:-1553,surroundKill:30000,surroundRisk:-120000,battle:55,statusInflict:25,statusSuffer:-180,tempo:1263};
+(function(){var s=document.createElement('script');s.src='src/ai-turn-fix.js';document.body.appendChild(s);})();
