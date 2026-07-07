@@ -1,6 +1,7 @@
 window.KOMA=window.KOMA||{};
 (function(K){
 K.restoreFigureAbilities=function(){
+  if(K.installOriginalPartyPatches)K.installOriginalPartyPatches();
   if(K.FIGURES.gengar){
     K.FIGURES.gengar.ability={name:'すりぬけ',text:'このポケモン自身は他のポケモンを通過して移動できます。ただし他のポケモンがこのポケモンを通過できるわけではありません。',passThrough:true};
   }
