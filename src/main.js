@@ -15,6 +15,8 @@ function loadScript(src,done){const s=document.createElement('script');s.src=src
 window.addEventListener('DOMContentLoaded',()=>{
   K.restoreFigureAbilities&&K.restoreFigureAbilities();
   loadCss('learning-ui.css');
-  loadScript('src/learning-ui.js',()=>{K.bindUi();K.start();});
+  loadScript('src/ai-defaults.js',()=>{
+    loadScript('src/learning-ui.js',()=>{K.bindUi();K.start();});
+  });
 });
 })(window.KOMA);
