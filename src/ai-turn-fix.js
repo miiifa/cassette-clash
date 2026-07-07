@@ -2,12 +2,13 @@ window.KOMA=window.KOMA||{};
 (function(K){
 K.DECKS={p1:['pikachu','squirtle','bulbasaur','gengar','koko','greninja'],p2:['koko','gengar','rotom','greninja','mewtwo','deoxysD']};
 function dist(a,b){if(a===b)return 0;const q=[a],m=new Map([[a,0]]);while(q.length){const c=q.shift(),d=m.get(c);for(const n of K.neigh(c)){if(m.has(n))continue;if(n===b)return d+1;m.set(n,d+1);q.push(n);}}return 99;}
+function pieces(){return[...K.s.p1.bench,...K.s.p1.field,...K.s.p1.pc,...K.s.p2.bench,...K.s.p2.field,...K.s.p2.pc];}
 function legal(o){const r=[];for(const p of K.s[o].field.slice()){try{if(K.canWakeByAlly(p))r.push({type:'wake',p});if(!K.canAct(p))continue;for(const x of K.battleableEnemies(p))r.push({type:'battle',p,d:x});for(const n of K.moveTargets(p,o))r.push({type:'move',p,n});}catch(e){}}for(const p of K.s[o].bench.slice()){try{for(const n of K.entryTargets(p,o))r.push({type:'deploy',p,n});}catch(e){}}return r;}
 function valid(p){return p&&p.p&&(p.type==='wake'||p.type==='battle'||p.n);}
 function goals(o){return legal(o).filter(x=>(x.type==='move'||x.type==='deploy')&&x.n===K.TARGET[o]);}
-function snap(){return{f1:K.s.p1.field.slice(),b1:K.s.p1.bench.slice(),f2:K.s.p2.field.slice(),b2:K.s.p2.bench.slice(),pos:new Map(K.all().map(p=>[p.id,p.pos]))};}
-function restore(s){K.s.p1.field=s.f1;K.s.p1.bench=s.b1;K.s.p2.field=s.f2;K.s.p2.bench=s.b2;for(const p of K.all())p.pos=s.pos.get(p.id);}
-function apply(p){if(p.type==='move')p.p.pos=p.n;if(p.type==='deploy'){const pl=K.s[p.p.owner];pl.bench=pl.bench.filter(x=>x.id!==p.p.id);pl.field.push(p.p);p.p.pos=p.n;}}
+function snap(){return{f1:K.s.p1.field.slice(),b1:K.s.p1.bench.slice(),pc1:K.s.p1.pc.slice(),f2:K.s.p2.field.slice(),b2:K.s.p2.bench.slice(),pc2:K.s.p2.pc.slice(),pos:new Map(pieces().map(p=>[p.id,p.pos]))};}
+function restore(s){K.s.p1.field=s.f1;K.s.p1.bench=s.b1;K.s.p1.pc=s.pc1;K.s.p2.field=s.f2;K.s.p2.bench=s.b2;K.s.p2.pc=s.pc2;for(const p of pieces())p.pos=s.pos.has(p.id)?s.pos.get(p.id):null;}
+function apply(p){if(p.type==='move')p.p.pos=p.n;if(p.type==='deploy'){const pl=K.s[p.p.owner];pl.bench=pl.bench.filter(x=>x.id!==p.p.id);if(!pl.field.some(x=>x.id===p.p.id))pl.field.push(p.p);p.p.pos=p.n;}}
 function isSurrounded(piece){if(!piece||!piece.pos)return false;const ns=K.neigh(piece.pos);return ns.length&&ns.every(n=>{const o=K.at(n);return o&&o.owner!==piece.owner;});}
 function afterHumanGoal(p){const s=snap();try{apply(p);return goals('p1').length>0;}finally{restore(s);}}
 function selfSurroundedAfter(p){const s=snap();try{apply(p);return isSurrounded(p.p);}finally{restore(s);}}
