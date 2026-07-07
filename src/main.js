@@ -1,5 +1,14 @@
 window.KOMA=window.KOMA||{};
 (function(K){
-K.start=function(){K.initState();K.render();};
-window.addEventListener('DOMContentLoaded',()=>{K.bindUi();K.start();});
+K.restoreFigureAbilities=function(){
+  if(K.FIGURES.gengar){
+    K.FIGURES.gengar.ability={name:'すりぬけ',text:'このポケモン自身は他のポケモンを通過して移動できます。ただし他のポケモンがこのポケモンを通過できるわけではありません。',passThrough:true};
+  }
+  if(K.FIGURES.rotom){
+    K.FIGURES.rotom.ability={name:'ふゆう',text:'このポケモン自身は他のポケモンを通過して移動できます。ただし他のポケモンがこのポケモンを通過できるわけではありません。',passThrough:true};
+  }
+  K.isPassThrough=p=>p.status.condition==='sleep'||p.status.condition==='frozen';
+};
+K.start=function(){K.restoreFigureAbilities&&K.restoreFigureAbilities();K.initState();K.render();};
+window.addEventListener('DOMContentLoaded',()=>{K.restoreFigureAbilities&&K.restoreFigureAbilities();K.bindUi();K.start();});
 })(window.KOMA);
