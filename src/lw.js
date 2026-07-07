@@ -1,0 +1,1 @@
+window.KOMA.DEFAULT_AI_WEIGHTS={goalNow:15000000,blockGoal:11800000,oppGoal:-6000000,pc:2235,field:93,goalDist:824,goalThreat:100000,cornerThreat:54000,spawnBlock:4500,ownSpawnBlocked:-39150,center:-1538,surroundKill:30000,surroundRisk:-120000,battle:55,statusInflict:25,statusSuffer:-180,tempo:1302};
