@@ -14,8 +14,11 @@ function afterHumanGoal(p){const s=snap();try{apply(p);return goals('p1').length
 function selfSurroundedAfter(p){const s=snap();try{apply(p);return isSurrounded(p.p);}finally{restore(s);}}
 function safeGoal(p){return(p.type==='move'||p.type==='deploy')&&p.n===K.TARGET[p.p.owner]&&!selfSurroundedAfter(p);}
 function holdsGoal(){return K.s.p2.field.find(p=>p.pos===K.TARGET.p1)||null;}
+function humanThreats(){return goals('p1');}
+function targetBlockers(ps){return ps.filter(x=>(x.type==='move'||x.type==='deploy')&&x.n===K.TARGET.p1&&!selfSurroundedAfter(x));}
+function fieldCount(o){return K.s[o].field.length;}
 function fastThreat(){return K.s.p1.field.some(p=>K.canAct(p)&&dist(p.pos,K.TARGET.p1)<=K.effectiveMp(p,'p1')+1);}
-function guardNode(n){return n===K.TARGET.p1?10000000:500000-dist(n,K.TARGET.p1)*120000+(K.SPAWN.p1.includes(n)?80000:0);}
+function guardNode(n){return n===K.TARGET.p1?20000000:500000-dist(n,K.TARGET.p1)*130000+(K.SPAWN.p1.includes(n)?80000:0);}
 function attackNode(n){return 900000-dist(n,K.TARGET.p2)*120000+(K.SPAWN.p2.includes(n)?70000:0);}
 function score(p){
   const blocker=holdsGoal();
@@ -26,18 +29,20 @@ function score(p){
   if(selfSurroundedAfter(p))return-70000000;
   if(p.type==='battle'){
     let s=160000+(K.battleScore?K.battleScore(p.p,p.d)*50:0);
-    if(goals('p1').some(g=>g.p&&g.p.id===p.d.id))s+=9000000;
-    if(p.d.pos&&dist(p.d.pos,K.TARGET.p1)<=K.effectiveMp(p.d,'p1'))s+=3000000;
+    if(goals('p1').some(g=>g.p&&g.p.id===p.d.id))s+=12000000;
+    if(p.d.pos&&dist(p.d.pos,K.TARGET.p1)<=K.effectiveMp(p.d,'p1'))s+=4500000;
     if(blocker&&p.p.id!==blocker.id)s+=500000;
     return s;
   }
   if(p.type==='move'||p.type==='deploy'){
     let s=0;
+    if(p.n===K.TARGET.p1)s+=30000000;
     if(blocker&&p.p.id!==blocker.id){
       s+=attackNode(p.n)*3;
       s+=Math.max(0,8-dist(p.n,K.TARGET.p2))*45000;
+      if(fieldCount('p2')<3&&p.type==='deploy')s+=1200000;
     }else{
-      s+=(fastThreat()?8:1)*guardNode(p.n);
+      s+=(fastThreat()?10:2)*guardNode(p.n);
       s+=attackNode(p.n)*0.35;
     }
     if(K.ability&&K.ability(p.p,'jump'))s+=12000;
@@ -48,7 +53,36 @@ function score(p){
   if(p.type==='wake')return 30000;
   return 0;
 }
-function think(){const ps=legal('p2');if(!ps.length)return null;let p=ps.find(x=>safeGoal(x));if(p)return p;const blocker=holdsGoal();if(blocker){const safe=ps.filter(x=>!(x.type==='move'&&x.p.id===blocker.id)&&score(x)>-10000000);return(safe.length?safe:ps).sort((a,b)=>score(b)-score(a))[0]||null;}const hg=goals('p1');p=ps.find(x=>(x.type==='move'||x.type==='deploy')&&x.n===K.TARGET.p1&&!selfSurroundedAfter(x));if(p)return p;p=ps.find(x=>x.type==='battle'&&hg.some(g=>g.p&&g.p.id===x.d.id));if(p)return p;const safe=ps.filter(x=>score(x)>-10000000);return(safe.length?safe:ps).sort((a,b)=>score(b)-score(a))[0];}
+function think(){
+  const ps=legal('p2');
+  if(!ps.length)return null;
+  let p=ps.find(x=>safeGoal(x));
+  if(p)return p;
+
+  const threats=humanThreats();
+  if(threats.length){
+    const blocks=targetBlockers(ps).sort((a,b)=>score(b)-score(a));
+    if(blocks.length){K.log('BOSS AI: 即ゴールをゴール上で止めます。');return blocks[0];}
+    const hit=ps.filter(x=>x.type==='battle'&&threats.some(t=>t.p&&t.p.id===x.d.id)).sort((a,b)=>score(b)-score(a))[0];
+    if(hit){K.log('BOSS AI: 即ゴール駒を攻撃します。');return hit;}
+  }
+
+  const blocker=holdsGoal();
+  if(blocker){
+    const deploys=ps.filter(x=>x.type==='deploy'&&fieldCount('p2')<3&&score(x)>-10000000);
+    if(deploys.length)return deploys.sort((a,b)=>score(b)-score(a))[0];
+    const safe=ps.filter(x=>!(x.type==='move'&&x.p.id===blocker.id)&&score(x)>-10000000);
+    return(safe.length?safe:ps).sort((a,b)=>score(b)-score(a))[0]||null;
+  }
+
+  p=targetBlockers(ps).sort((a,b)=>score(b)-score(a))[0];
+  if(p)return p;
+  const hg=goals('p1');
+  p=ps.find(x=>x.type==='battle'&&hg.some(g=>g.p&&g.p.id===x.d.id));
+  if(p)return p;
+  const safe=ps.filter(x=>score(x)>-10000000);
+  return(safe.length?safe:ps).sort((a,b)=>score(b)-score(a))[0];
+}
 function lose(o){K.s.win=K.other(o);K.s.locked=false;K.s.phase='idle';K.clearSelection&&K.clearSelection();K.log(o+'は完全に動けません。'+K.s.win+'の勝利です。');K.render&&K.render();}
 function runLater(){clearTimeout(K.aiTimer);setTimeout(()=>{if(K.s&&K.s.turn==='p2'&&K.s.ai&&!K.s.win&&!K.s.locked&&K.s.phase==='idle')K.runAi();},80);}
 K.chooseAiPlan=function(){return think();};
