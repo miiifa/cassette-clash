@@ -2,23 +2,23 @@ window.KOMA=window.KOMA||{};
 (function(K){
 K.AI_WEIGHT_KEY='koma_ai_learned_weights_v1';
 K.DEFAULT_AI_WEIGHTS={
-  goalNow:3000000,
-  blockGoal:2664000,
-  oppGoal:-2774000,
-  pc:700,
-  field:105,
-  goalDist:94,
-  goalThreat:15600,
-  cornerThreat:54000,
-  spawnBlock:3750,
-  ownSpawnBlocked:-4350,
-  center:170,
-  surroundKill:25500,
-  surroundRisk:-16800,
-  battle:39,
-  statusInflict:20,
-  statusSuffer:-20,
-  tempo:232
+  goalNow: 15000000,
+  blockGoal: 12000000,
+  oppGoal: -8000000,
+  pc: 2500,
+  field: 463,
+  goalDist: 1000,
+  goalThreat: 100000,
+  cornerThreat: 75000,
+  spawnBlock: 15000,
+  ownSpawnBlocked: -50000,
+  center: -5000,
+  surroundKill: 60000,
+  surroundRisk: -120000,
+  battle: 200,
+  statusInflict: 200,
+  statusSuffer: -300,
+  tempo: 2000
 };
 const POSITIVE_KEYS=['goalNow','blockGoal','pc','field','goalDist','goalThreat','cornerThreat','spawnBlock','surroundKill','battle','statusInflict','tempo'];
 const NEGATIVE_KEYS=['oppGoal','ownSpawnBlocked','surroundRisk','statusSuffer'];
