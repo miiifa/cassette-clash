@@ -1,92 +1,61 @@
-# Pokemon Duel Offline MVP
+# Cassette Clash
 
-個人用のオフライン版「ポケモンコマスター / Pokémon Duel」風プロトタイプです。
+Cassette Clash は、ブラウザだけで遊べるオリジナルの1人用ボードバトルゲームです。
 
-## 目的
+6体のユニットを盤面に出し、移動・バトル・プレートを使って相手ゴールを目指します。現在はオフライン専用で、相手はBOSS AIです。
 
-まずはオンライン対戦なしで、1台のブラウザ上で2人分の操作を交互に行える最小構成を作ります。
+## コンセプト
 
-## できること
+- オリジナルユニットのみ
+- カセット系プレートによる一時強化
+- 押し流し、睡眠、MP低下、入れ替え、すりぬけのコンボ
+- 試合終了後の機械可読JSONレポート
+- スマホブラウザでも動くように、通常のscriptタグ構成
 
-- 盤面表示
-- ベンチからスポーンに出撃
-- MPに応じた移動
-- 隣接フィギュアへのバトル
-- 攻撃ホイールのランダムスピン
-- 色ごとの簡易勝敗判定
-- 負けたフィギュアをPCへ送る
-- PCが2体を超えたら古いフィギュアをベンチへ戻す
-- 相手ゴール到達で勝利
+## 現在の自分デッキ
 
-## Androidアプリとして入れる
+```txt
+モジュリン
+オシナガ
+ネムリネ
+ガイアーマ
+フェイズキャット
+ルミネル
+```
 
-スマホのホーム画面から普通のアプリみたいに開きたい場合は、APKを作って入れます。
+## 現在のBOSS AIデッキ
 
-このリポジトリには Android WebView アプリと、APKを作る GitHub Actions workflow を追加済みです。
+```txt
+ヴォイドレイ
+トゲオーガ
+ミラーモス
+ブラストボア
+ストームルーク
+ガイアーマ
+```
 
-APKの作り方:
+## プレート
 
-1. GitHub のリポジトリで `Actions` を開く
-2. `Build Android APK` を開く
-3. `Run workflow` を押す
-4. ビルドが終わったら、実行結果の `Artifacts` から `pokemon-duel-offline-debug-apk` をダウンロードする
-5. ZIPを展開して `app-debug.apk` をタップする
-6. Android の警告が出たら、このインストール元を許可して入れる
-7. ホーム画面に `コマスター` というアプリが出る
+```txt
+Xアタック
+パワーカセット
+フェイズカセット
+Xスピード
+```
 
-## 2回目以降の更新
+パワーカセットはカセット技を強化し、フェイズカセットは次に動かすユニットを1回だけすりぬけ移動可能にします。
 
-アプリ本体を毎回入れ直さなくて済むように、アプリ内に `HTML更新` ボタンを追加しています。
+## 遊び方
 
-`play.html` だけを変更した場合は、APKを作り直さなくても更新できます。
+1. `index.html` をブラウザで開く
+2. ベンチのユニットをタップして出撃
+3. 盤面上のユニットをタップして移動
+4. 隣接した相手ユニットをタップするとバトル
+5. 相手ゴールに到達したら勝利
 
-1. GitHubで新しい `play.html` を開く
-2. `Raw` またはメニューから `play.html` をダウンロードする
-3. スマホの `コマスター` アプリを開く
-4. 上部の `HTML更新` を押す
-5. ダウンロードした `play.html` を選ぶ
-6. 画面が更新される
+スマホでは、GitHubからZIPをダウンロードして展開し、`index.html` を開くのが簡単です。
 
-`内蔵版に戻す` を押すと、APKに最初から入っている `play.html` に戻せます。
-
-アプリアイコンやネイティブ側のボタンなど、Androidアプリ本体を変更した場合だけ、新しいAPKのインストールが必要です。
-
-## スマホでHTMLとして遊ぶ
-
-APK化せずに private リポジトリのまま個人で遊ぶなら、`play.html` を使います。
-
-`play.html` は CSS と JavaScript を全部まとめた1ファイル版なので、スマホにダウンロードしてブラウザで開けます。外部ファイルを読み込まないため、`index.html` よりスマホ向きです。
-
-Android での目安:
-
-1. GitHub アプリまたはブラウザで `play.html` を開く
-2. `Raw` またはメニューからダウンロードする
-3. ダウンロードした `play.html` を Chrome で開く
-4. ベンチの駒をタップ → 光ったSPをタップして出撃
-5. 盤面の自分の駒をタップ → 青いマスへ移動、赤いマスで攻撃
-
-GitHub の画面上でHTMLソースが表示されるだけの場合は、表示ではなく「ダウンロード」してから開いてください。
-
-## まだ入れていないもの
-
-- プレート
-- 特性
-- 状態異常
-- 進化
-- 包囲KOの完全再現
-- AI
-- オンライン対戦
-- 公式画像/アセット
-
-## デプロイ
-
-GitHub Pages 用の workflow はありますが、private リポジトリのまま個人利用するなら無理に使わなくてよいです。
-
-public 化すると権利面のリスクが上がるため、現時点では private のまま `play.html` またはAPKを使う方針がおすすめです。
-
-## ローカル起動
-
-PCで触る場合は、ブラウザのES Modulesを使うため、ローカルサーバー経由で開くのがおすすめです。
+## ローカルサーバーで起動
 
 ```bash
 python3 -m http.server 8000
@@ -98,47 +67,42 @@ python3 -m http.server 8000
 http://localhost:8000
 ```
 
-スマホではAPKか `play.html` を使う方が簡単です。
-
 ## ファイル構成
 
 ```txt
-.
-├── .github/
-│   └── workflows/
-│       ├── build-android-apk.yml
-│       └── deploy-pages.yml
-├── .nojekyll
-├── app/
-│   ├── build.gradle
-│   └── src/main/
-│       ├── AndroidManifest.xml
-│       ├── java/com/miiifa/pokemondueloffline/MainActivity.java
-│       └── res/values/styles.xml
-├── build.gradle
-├── settings.gradle
-├── index.html
-├── play.html
-├── styles.css
-├── data/
-│   └── figures.js
-└── src/
-    ├── board.js
-    ├── battle.js
-    ├── game.js
-    └── app.js
+index.html
+styles.css
+styles-patch.css
+src/data.js
+src/original-party.js
+src/state.js
+src/rules.js
+src/effects-patch.js
+src/ui.js
+src/ui-patch.js
+src/plates.js
+src/report.js
+src/ai-turn-fix.js
+src/main.js
+assets/plates/
 ```
 
-## 次にやるとよさそうなこと
+## 試合レポート
 
-1. APKのビルド結果を確認する
-2. play.html のスマホ操作性を改善する
-3. Serebii / Archive / 参考リポジトリからフィギュアデータを増やす
-4. 攻撃ホイールのサイズを実データに寄せる
-5. プレートを追加する
-6. 特性と状態異常を追加する
-7. セーブ/ロードを localStorage に入れる
+試合終了後、ログの下にJSON形式の試合レポートが表示されます。
 
-## 注意
+主な内容:
 
-個人利用前提のプロトタイプです。公開・配布する場合は、名称・画像・技名などの権利面に注意してください。
+- 勝者
+- 勝利理由
+- 最終盤面
+- 各ユニットの状態
+- バトル履歴
+- プレート使用状況
+- AI解析用イベントログ
+
+## ライセンス
+
+未定。
+
+公開・再利用する場合は、必要に応じてライセンスを追加してください。
