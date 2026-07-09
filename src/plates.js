@@ -4,6 +4,7 @@ K.PLATES={
   xAttack:{name:'Xアタック',asset:'assets/plates/x-attack.svg',desc:'次の白/金ワザのダメージを+20。',kind:'boost'},
   cassette:{name:'パワーカセット',asset:'assets/plates/cassette.svg',desc:'次の白/金ワザ+10。カセット技はさらに強化。',kind:'cassettePower'},
   burstCassette:{name:'バーストカセット',asset:'assets/plates/cassette.svg',desc:'次の白/金ワザのダメージを+30。',kind:'cassetteBurst'},
+  goldCassette:{name:'ゴールドカセット',asset:'assets/plates/cassette.svg',desc:'次のバトルだけ、自分の白技が全部金技になる。',kind:'cassetteGold'},
   swapCassette:{name:'スワップカセット',asset:'assets/plates/cassette.svg',desc:'次のバトルで勝てば相手と位置入れ替え。',kind:'cassetteSwap'},
   homeCassette:{name:'ホームカセット',asset:'assets/plates/cassette.svg',desc:'次に動かす駒が自分ゴールへ戻れる。',kind:'cassetteHome'},
   jumpCassette:{name:'ジャンプカセット',asset:'assets/plates/cassette.svg',desc:'次に動かす駒が1回だけ飛び越え移動。',kind:'cassetteJump'},
@@ -19,7 +20,7 @@ function consumePlateId(owner,id){
 }
 K.seedPlates=function(){
   if(!K.s)return;
-  K.s.p1plates=['xAttack','cassette','burstCassette','swapCassette','homeCassette','jumpCassette','healCassette','phaseCassette','xSpeed'];
+  K.s.p1plates=['xAttack','cassette','burstCassette','goldCassette','swapCassette','homeCassette','jumpCassette','healCassette','phaseCassette','xSpeed'];
   K.s.p2plates=[];
   K.s.activePlate=null;
   K.s.usedPlateThisTurn=false;
@@ -53,6 +54,7 @@ K.usePlate=function(id){
   if(id==='homeCassette')msg='次に動かす自分の駒が自分ゴールへ戻れるようになります。';
   if(id==='swapCassette')msg='次のバトルで勝った時、相手と位置を入れ替えます。';
   if(id==='burstCassette')msg='次の白/金ワザが+30されます。';
+  if(id==='goldCassette')msg='次のバトルだけ、自分の白技がすべて金技になります。紫技に強く出られます。';
   if(id==='cassette')msg='次の白/金ワザが強化され、カセット技は追加で強くなります。';
   K.log('プレート「'+K.PLATES[id].name+'」を使います。'+msg);
   K.render&&K.render();
@@ -85,6 +87,24 @@ if(!K._plateRenderPatched){
   K._plateRenderPatched=true;
   const render0=K.render;
   K.render=function(){render0&&render0();K.renderPlates&&K.renderPlates();};
+}
+if(!K._plateGoldWheelPatched){
+  K._plateGoldWheelPatched=true;
+  const wheel0=K.wheelFor;
+  K.wheelFor=function(p,silent=false){
+    const w=wheel0.call(this,p,silent);
+    const act=K.s&&K.s.activePlate;
+    if(act&&act.id==='goldCassette'&&p&&p.owner===act.owner){
+      for(const seg of w){
+        if(seg.c==='white'){
+          seg.c='gold';
+          seg.n='金化 '+seg.n;
+          seg.goldCassette=true;
+        }
+      }
+    }
+    return w;
+  };
 }
 if(!K._plateValuePatched){
   K._plateValuePatched=true;
@@ -151,7 +171,7 @@ if(!K._plateBattlePatched){
   const battle0=K.resolveBattle;
   K.resolveBattle=function(a,d,as,ds,out){
     const act=K.s&&K.s.activePlate;
-    const battlePlate=act&&(act.id==='xAttack'||act.id==='cassette'||act.id==='burstCassette'||act.id==='swapCassette')&&(act.owner===a.owner||act.owner===d.owner);
+    const battlePlate=act&&(act.id==='xAttack'||act.id==='cassette'||act.id==='burstCassette'||act.id==='goldCassette'||act.id==='swapCassette')&&(act.owner===a.owner||act.owner===d.owner);
     if(act&&act.id==='swapCassette'){
       const own=act.owner===a.owner?a:d;
       const ownSeg=own===a?as.seg:ds.seg;
