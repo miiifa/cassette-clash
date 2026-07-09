@@ -11,7 +11,15 @@ function pathFor(p,node){
 }
 function poison(p,trap){
   if(!p||!trap||p.owner===trap.owner)return false;
-  if(p.status.condition==='toxic'||p.status.condition==='poison')return false;
+  if(p.status.condition==='toxic'){
+    K.log(p.n+'は毒の足跡を踏みましたが、すでにどくどくです。');
+    return false;
+  }
+  if(p.status.condition==='poison'){
+    p.status.condition='toxic';
+    K.log(p.n+'は'+trap.sourceName+'の毒の足跡をもう一度踏んでどくどくになりました。');
+    return true;
+  }
   p.status.condition='poison';
   K.log(p.n+'は'+trap.sourceName+'の毒の足跡を踏んでどくになりました。');
   return true;
@@ -23,7 +31,7 @@ K.addPoisonTrail=function(p,path){
   const traps=ensure();
   K.s.poisonTraps=traps.filter(t=>!(t.owner===p.owner&&t.sourceId===p.id));
   K.s.poisonTraps.push({owner:p.owner,sourceId:p.id,sourceName:p.n,nodes,createdTurn:K.s.turnCount});
-  K.log(p.n+'の特性「毒の足跡」: 通った道に毒床を残しました。');
+  K.log(p.n+'の特性「毒の足跡」: 通った道に毒床を残しました。2回踏むとどくどくになります。');
 };
 K.checkPoisonTraps=function(p,path){
   if(!K.s||!K.s.poisonTraps||!p)return;
@@ -41,8 +49,8 @@ K.expirePoisonTrapsForTurn=function(){
   if(before!==K.s.poisonTraps.length)K.log('毒の足跡が消えました。');
 };
 if(K.FIGURES&&K.FIGURES.sleepvine){
-  K.FIGURES.sleepvine.ability={name:'毒の足跡',text:'移動したあと、通ったマスに毒床を残します。毒床は相手ターンの間だけ残り、敵が通る/止まるとどくになります。'};
-  K.FIGURES.sleepvine.desc='眠りと毒で道を作る胞子ユニット。移動後に通った道へ毒床を残す。';
+  K.FIGURES.sleepvine.ability={name:'毒の足跡',text:'移動したあと、通ったマスに毒床を残します。毒床は相手ターンの間だけ残り、敵が通る/止まるとどく、すでにどくならどくどくになります。'};
+  K.FIGURES.sleepvine.desc='眠りと毒で道を作る胞子ユニット。移動後に通った道へ毒床を残し、二度踏ませるとどくどくにする。';
 }
 if(!K._poisonTrailMovePatched){
   K._poisonTrailMovePatched=true;
@@ -86,7 +94,7 @@ if(!K._poisonTrailRenderPatched){
         const xy=K.NODES[k];
         if(Math.abs(xy[0]-left)<0.05&&Math.abs(xy[1]-top)<0.05){id=k;break;}
       }
-      if(id&&nodes.has(id)){el.classList.add('poisonTrap');el.title='毒の足跡';}
+      if(id&&nodes.has(id)){el.classList.add('poisonTrap');el.title='毒の足跡 / 2回でどくどく';}
     }
   };
 }
