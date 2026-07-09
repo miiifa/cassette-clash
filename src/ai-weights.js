@@ -6,7 +6,7 @@ K.DEFAULT_AI_WEIGHTS={
   blockGoal: 12000000,
   oppGoal: -8000000,
   pc: 2500,
-  field: 463,
+  field: 500,
   goalDist: 1000,
   goalThreat: 100000,
   cornerThreat: 75000,
