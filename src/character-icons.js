@@ -26,8 +26,12 @@ K.characterIconMarkup=function(p){
   return iconMarkup(no,type);
 };
 K.characterIconSmall=function(p){return K.characterIconMarkup(p);};
+K.iconFor=function(p){return K.characterIconMarkup(p);};
 K.characterVibe=function(fig){
   const f=K.FIGURES[fig]||{},no=f.no||1;
   return bodyTypes[no%bodyTypes.length];
+};
+K.characterVibeLabel=function(fig){
+  return {cute:'かわいい系',cool:'クール系',smart:'インテリ系',elegant:'セクシー/優雅系',beast:'モンスター型',mech:'機械型',spirit:'精霊型',dragon:'ドラゴン型',plant:'植物型',armored:'重装型',slime:'ぷに系',bird:'鳥/飛行型'}[K.characterVibe(fig)]||'個性派';
 };
 })(window.KOMA);
