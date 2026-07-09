@@ -1,38 +1,45 @@
 window.KOMA=window.KOMA||{};
 (function(K){
-const bodyTypes=['cute','cool','smart','elegant','beast','mech','spirit','dragon','plant','armored','slime','bird'];
-const moods=['smile','sharp','calm','wink','angry','sleepy'];
-const gear=['none','tail','wings','horns','weapon','book','cape','antenna','claws','halo','shield','leaf','gem','flame'];
+const ASSETS={
+  modulyn:'assets/characters/modulyn.svg',
+  pushwyrm:'assets/characters/pushwyrm.svg',
+  sleepvine:'assets/characters/sleepvine.svg',
+  gaiarmor:'assets/characters/gaiarmor.svg',
+  phasecat:'assets/characters/phasecat.svg',
+  luminelle:'assets/characters/luminelle.svg',
+  voidray:'assets/characters/voidray.svg',
+  thornogre:'assets/characters/thornogre.svg',
+  mirrormoth:'assets/characters/mirrormoth.svg',
+  blastboar:'assets/characters/blastboar.svg',
+  stormrook:'assets/characters/stormrook.svg'
+};
+const VIBES={
+  modulyn:'インテリ系 / 小型メカ',
+  pushwyrm:'クール系 / 流線モンスター',
+  sleepvine:'かわいい系 / 毒草トラップ',
+  gaiarmor:'重装型 / ゴール番人',
+  phasecat:'セクシー/クール系 / すりぬけ猫',
+  luminelle:'かわいい系 / 光のサポーター',
+  voidray:'クール系 / 闇の浮遊獣',
+  thornogre:'モンスター型 / 棘の巨人',
+  mirrormoth:'インテリ/妖艶系 / 鏡蛾',
+  blastboar:'モンスター型 / 爆走猪',
+  stormrook:'クール系 / 嵐の鳥騎士'
+};
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-function palette(type,no){
-  const base=(K.TYPE_COLORS&&K.TYPE_COLORS[type])||'#94a3b8';
-  const dark={fire:'#7f1d1d',water:'#075985',leaf:'#14532d',electric:'#713f12',earth:'#422006',wind:'#134e4a',light:'#64748b',dark:'#2e1065',metal:'#334155',mystic:'#581c87'}[type]||'#111827';
-  const hi={fire:'#fed7aa',water:'#bae6fd',leaf:'#bbf7d0',electric:'#fef08a',earth:'#fde68a',wind:'#99f6e4',light:'#ffffff',dark:'#ddd6fe',metal:'#e2e8f0',mystic:'#f5d0fe'}[type]||'#fff';
-  const glow={fire:'#fb923c',water:'#7dd3fc',leaf:'#86efac',electric:'#fde047',earth:'#d97706',wind:'#5eead4',light:'#ffffff',dark:'#a78bfa',metal:'#cbd5e1',mystic:'#f0abfc'}[type]||'#fff';
-  return{base,dark,hi,glow};
-}
-function pick(arr,idx){return arr[Math.abs(idx)%arr.length];}
-function iconMarkup(no,type,preset){
-  const p=palette(type,no);
-  const body=preset&&preset.body||pick(bodyTypes,no);
-  const mood=preset&&preset.mood||pick(moods,no*3);
-  const g1=preset&&preset.gear||pick(gear,no*5);
-  const g2=preset&&preset.sub||pick(gear,no*7+3);
-  return '<span class="charIcon fullBody body-'+esc(body)+' mood-'+esc(mood)+' gear-'+esc(g1)+' sub-'+esc(g2)+'" style="--c:'+p.base+';--d:'+p.dark+';--h:'+p.hi+';--g:'+p.glow+'">'
-    +'<i class="shadow"></i><i class="back back1"></i><i class="back back2"></i><i class="leg l"></i><i class="leg r"></i><i class="tail"></i><i class="body"></i><i class="arm l"></i><i class="arm r"></i><i class="head"></i><i class="ear l"></i><i class="ear r"></i><i class="eye l"></i><i class="eye r"></i><i class="mouth"></i><i class="item"></i><i class="badge"></i>'
-    +'</span>';
+function fallback(p){
+  const f=K.FIGURES[p.fig]||{},type=f.type||'mystic';
+  const color=(K.TYPE_COLORS&&K.TYPE_COLORS[type])||'#94a3b8';
+  const sym=(K.TYPE_SYMBOLS&&K.TYPE_SYMBOLS[type])||'●';
+  return '<span class="charFallback" style="background:'+esc(color)+'">'+esc(sym)+'</span>';
 }
 K.characterIconMarkup=function(p){
-  const f=K.FIGURES[p.fig]||{},type=f.type||'mystic',no=f.no||1;
-  return iconMarkup(no,type,f.iconPreset);
+  const src=ASSETS[p.fig];
+  if(src)return '<img class="charImg" src="'+src+'" alt="'+esc(p.n)+'">';
+  return fallback(p);
 };
 K.characterIconSmall=function(p){return K.characterIconMarkup(p);};
 K.iconFor=function(p){return K.characterIconMarkup(p);};
-K.characterVibe=function(fig){
-  const f=K.FIGURES[fig]||{},no=f.no||1;
-  return f.iconPreset&&f.iconPreset.body||bodyTypes[no%bodyTypes.length];
-};
-K.characterVibeLabel=function(fig){
-  return {cute:'かわいい系',cool:'クール系',smart:'インテリ系',elegant:'セクシー/優雅系',beast:'モンスター型',mech:'機械型',spirit:'精霊型',dragon:'ドラゴン型',plant:'植物型',armored:'重装型',slime:'ぷに系',bird:'鳥/飛行型'}[K.characterVibe(fig)]||'個性派';
-};
+K.characterVibe=function(fig){return VIBES[fig]||'個性派';};
+K.characterVibeLabel=function(fig){return K.characterVibe(fig);};
 })(window.KOMA);
