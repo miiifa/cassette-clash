@@ -132,7 +132,7 @@ if(!K._cassetteDeckRenderPatched){
       const disabled=K.s.turn!=='p1'||!!K.s.win||K.s.locked||K.s.phase!=='idle'||K.s.usedPlateThisTurn||isActive;
       const desc=powered&&K.plateMessage?K.plateMessage(id,true):p.desc;
       const life=getLife('p1',id);
-      return '<div class="plateCard handCard'+(isActive?' active':'')+(powered?' powered':'')+(life<=1?' expiring':'')+'">'
+      return '<div class="plateCard handCard life'+life+(isActive?' active':'')+(powered?' powered':'')+(life<=1?' expiring':'')+'">'
         +'<img class="plateArt" src="'+p.asset+'" alt="'+name+'">'
         +'<div class="plateName">'+name+'</div>'
         +'<div class="plateLife">寿命 '+life+'</div>'
