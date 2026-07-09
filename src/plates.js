@@ -24,6 +24,66 @@ K.seedPlates=function(){
   K.s.p2plates=[];
   K.s.activePlate=null;
   K.s.usedPlateThisTurn=false;
+  K.s.pendingPlateId=null;
+};
+K.plateMessage=function(id){
+  let msg='次のバトルに反映されます。';
+  if(id==='xSpeed')msg='次に動かす自分の駒のMPが+1されます。';
+  if(id==='phaseCassette')msg='次に動かす自分の駒が1回だけすりぬけ移動できます。';
+  if(id==='jumpCassette')msg='次に動かす自分の駒が1回だけ飛び越え移動できます。';
+  if(id==='homeCassette')msg='次に動かす自分の駒が自分ゴールへ戻れるようになります。';
+  if(id==='swapCassette')msg='次のバトルで勝った時、相手と位置を入れ替えます。';
+  if(id==='burstCassette')msg='次の白/金ワザが+30されます。';
+  if(id==='goldCassette')msg='次のバトルだけ、自分の白技がすべて金技になります。紫技に強く出られます。';
+  if(id==='cassette')msg='次の白/金ワザが強化され、カセット技は追加で強くなります。';
+  if(id==='healCassette')msg='味方全体の状態異常とMP低下を回復します。';
+  if(id==='xAttack')msg='次の白/金ワザのダメージを+20します。';
+  return msg;
+};
+K.ensurePlateDialog=function(){
+  let box=document.getElementById('plateConfirmOverlay');
+  if(box)return box;
+  box=document.createElement('div');
+  box.id='plateConfirmOverlay';
+  box.style.cssText='position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.72);z-index:3000;padding:20px;';
+  box.innerHTML=''
+    +'<div style="width:min(92vw,420px);background:#0f172a;color:#e5e7eb;border:1px solid #475569;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.45);overflow:hidden">'
+    +'<div style="padding:16px 16px 8px;font-weight:700;font-size:18px">プレートを使いますか？</div>'
+    +'<div style="display:flex;gap:12px;align-items:center;padding:8px 16px 0">'
+    +'<img id="plateConfirmArt" src="" alt="" style="width:72px;height:72px;object-fit:contain;border-radius:12px;background:#ffffff10;border:1px solid #334155;padding:8px">'
+    +'<div style="min-width:0;flex:1">'
+    +'<div id="plateConfirmName" style="font-size:16px;font-weight:700"></div>'
+    +'<div id="plateConfirmDesc" style="font-size:13px;line-height:1.5;color:#cbd5e1;margin-top:6px"></div>'
+    +'</div></div>'
+    +'<div id="plateConfirmEffect" style="padding:12px 16px 4px;font-size:13px;line-height:1.6;color:#f8fafc"></div>'
+    +'<div style="display:flex;gap:10px;padding:16px">'
+    +'<button id="plateConfirmCancel" style="flex:1;height:42px;border-radius:12px;border:1px solid #64748b;background:#1e293b;color:#e2e8f0;font-weight:700">キャンセル</button>'
+    +'<button id="plateConfirmUse" style="flex:1;height:42px;border-radius:12px;border:0;background:#38bdf8;color:#082f49;font-weight:800">使う</button>'
+    +'</div></div>';
+  document.body.appendChild(box);
+  box.addEventListener('click',e=>{if(e.target===box)K.closePlateDialog();});
+  box.querySelector('#plateConfirmCancel').onclick=()=>K.closePlateDialog();
+  box.querySelector('#plateConfirmUse').onclick=()=>{const id=K.s&&K.s.pendingPlateId;if(id)K.usePlate(id);};
+  return box;
+};
+K.openPlateDialog=function(id){
+  if(!K.s||K.s.turn!=='p1'||K.s.win||K.s.locked||K.s.phase!=='idle')return;
+  if(K.s.usedPlateThisTurn){K.log('プレートは1ターンに1枚までです。');K.render&&K.render();return;}
+  if(!K.s.p1plates||!K.s.p1plates.includes(id))return;
+  const p=K.PLATES[id];
+  const box=K.ensurePlateDialog();
+  K.s.pendingPlateId=id;
+  box.querySelector('#plateConfirmArt').src=p.asset;
+  box.querySelector('#plateConfirmArt').alt=p.name;
+  box.querySelector('#plateConfirmName').textContent=p.name;
+  box.querySelector('#plateConfirmDesc').textContent=p.desc;
+  box.querySelector('#plateConfirmEffect').textContent=K.plateMessage(id);
+  box.style.display='flex';
+};
+K.closePlateDialog=function(){
+  if(K.s)K.s.pendingPlateId=null;
+  const box=document.getElementById('plateConfirmOverlay');
+  if(box)box.style.display='none';
 };
 K.showPlateFlash=function(id){
   const p=K.PLATES[id];
@@ -38,25 +98,17 @@ K.usePlate=function(id){
   if(!K.s||K.s.turn!=='p1'||K.s.win||K.s.locked||K.s.phase!=='idle')return;
   if(K.s.usedPlateThisTurn){K.log('プレートは1ターンに1枚までです。');K.render&&K.render();return;}
   if(!K.s.p1plates||!K.s.p1plates.includes(id))return;
+  K.closePlateDialog&&K.closePlateDialog();
   K.s.usedPlateThisTurn=true;
   K.showPlateFlash&&K.showPlateFlash(id);
   if(id==='healCassette'){
     for(const p of [...K.s.p1.field,...K.s.p1.bench]){p.status.condition=null;p.status.mpMinus=0;}
-    K.log('プレート「'+K.PLATES[id].name+'」で味方全体の状態異常とMP低下を回復しました。');
+    K.log('プレート「'+K.PLATES[id].name+'」を使用。'+K.plateMessage(id));
     consumePlateId('p1',id);
     return;
   }
   K.s.activePlate={owner:'p1',id};
-  let msg='次のバトルに反映されます。';
-  if(id==='xSpeed')msg='次に動かす自分の駒のMPが+1されます。';
-  if(id==='phaseCassette')msg='次に動かす自分の駒が1回だけすりぬけ移動できます。';
-  if(id==='jumpCassette')msg='次に動かす自分の駒が1回だけ飛び越え移動できます。';
-  if(id==='homeCassette')msg='次に動かす自分の駒が自分ゴールへ戻れるようになります。';
-  if(id==='swapCassette')msg='次のバトルで勝った時、相手と位置を入れ替えます。';
-  if(id==='burstCassette')msg='次の白/金ワザが+30されます。';
-  if(id==='goldCassette')msg='次のバトルだけ、自分の白技がすべて金技になります。紫技に強く出られます。';
-  if(id==='cassette')msg='次の白/金ワザが強化され、カセット技は追加で強くなります。';
-  K.log('プレート「'+K.PLATES[id].name+'」を使います。'+msg);
+  K.log('プレート「'+K.PLATES[id].name+'」を使用。'+K.plateMessage(id));
   K.render&&K.render();
 };
 K.consumeActivePlate=function(){
@@ -72,7 +124,7 @@ K.renderPlates=function(){
   const cards=(K.s.p1plates||[]).map(id=>{
     const p=K.PLATES[id];
     const isActive=active===id;
-    const disabled=K.s.turn!=='p1'||!!K.s.win||K.s.locked||K.s.phase!=='idle'||(K.s.usedPlateThisTurn&&!isActive);
+    const disabled=K.s.turn!=='p1'||!!K.s.win||K.s.locked||K.s.phase!=='idle'||K.s.usedPlateThisTurn||isActive;
     return '<div class="plateCard'+(isActive?' active':'')+'">'
       +'<img class="plateArt" src="'+p.asset+'" alt="'+p.name+'">'
       +'<div class="plateName">'+p.name+'</div>'
@@ -81,7 +133,7 @@ K.renderPlates=function(){
       +'</div>';
   }).join('');
   root.innerHTML='<div class="platesTitle"><span>プレート</span><span class="hintPlate">1ターン1枚 / カセット連携あり</span></div><div class="plateRow">'+cards+'</div>';
-  root.querySelectorAll('[data-plate]').forEach(btn=>btn.onclick=()=>K.usePlate(btn.dataset.plate));
+  root.querySelectorAll('[data-plate]').forEach(btn=>btn.onclick=()=>K.openPlateDialog(btn.dataset.plate));
 };
 if(!K._plateRenderPatched){
   K._plateRenderPatched=true;
@@ -208,6 +260,7 @@ if(!K._plateTurnPatched){
       K.log('プレート「'+K.PLATES[K.s.activePlate.id].name+'」は未使用のまま終了しました。');
       K.s.activePlate=null;
     }
+    K.closePlateDialog&&K.closePlateDialog();
     const prev=K.s&&K.s.turn;
     end0.apply(this,arguments);
     if(K.s&&prev!==K.s.turn&&K.s.turn==='p1')K.s.usedPlateThisTurn=false;
