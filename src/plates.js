@@ -12,6 +12,24 @@ K.PLATES={
   phaseCassette:{name:'フェイズカセット',asset:'assets/plates/phase-cassette.svg',desc:'次に動かす駒が1回だけすりぬけ移動。',kind:'cassettePhase'},
   xSpeed:{name:'Xスピード',asset:'assets/plates/x-speed.svg',desc:'このターン、次に動かす自分の駒のMPを+1。',kind:'speed'}
 };
+K.CASSETTE_POWER_NAMES={
+  cassette:'強化パワーカセット',
+  burstCassette:'強化バーストカセット',
+  goldCassette:'強化ゴールドカセット',
+  swapCassette:'強化スワップカセット',
+  homeCassette:'強化ホームカセット',
+  jumpCassette:'強化ジャンプカセット',
+  healCassette:'強化ヒールカセット',
+  phaseCassette:'強化フェイズカセット'
+};
+K.isCassettePlate=function(id){return !!K.CASSETTE_POWER_NAMES[id];};
+K.hasCassetteSync=function(owner='p1'){
+  return !!(K.s&&K.s[owner]&&K.s[owner].field&&K.s[owner].field.some(p=>p.fig==='modulyn'));
+};
+K.isStrengthenedCassette=function(id,owner='p1'){
+  return K.isCassettePlate(id)&&K.hasCassetteSync(owner);
+};
+function plateName(id,powered){return powered?(K.CASSETTE_POWER_NAMES[id]||K.PLATES[id].name):K.PLATES[id].name;}
 function consumePlateId(owner,id){
   const list=K.s&&K.s[owner+'plates'];
   if(Array.isArray(list)){const idx=list.indexOf(id);if(idx>=0)list.splice(idx,1);}
@@ -26,19 +44,18 @@ K.seedPlates=function(){
   K.s.usedPlateThisTurn=false;
   K.s.pendingPlateId=null;
 };
-K.plateMessage=function(id){
-  let msg='次のバトルに反映されます。';
-  if(id==='xSpeed')msg='次に動かす自分の駒のMPが+1されます。';
-  if(id==='phaseCassette')msg='次に動かす自分の駒が1回だけすりぬけ移動できます。';
-  if(id==='jumpCassette')msg='次に動かす自分の駒が1回だけ飛び越え移動できます。';
-  if(id==='homeCassette')msg='次に動かす自分の駒が自分ゴールへ戻れるようになります。';
-  if(id==='swapCassette')msg='次のバトルで勝った時、相手と位置を入れ替えます。';
-  if(id==='burstCassette')msg='次の白/金ワザが+30されます。';
-  if(id==='goldCassette')msg='次のバトルだけ、自分の白技がすべて金技になります。紫技に強く出られます。';
-  if(id==='cassette')msg='次の白/金ワザが強化され、カセット技は追加で強くなります。';
-  if(id==='healCassette')msg='味方全体の状態異常とMP低下を回復します。';
-  if(id==='xAttack')msg='次の白/金ワザのダメージを+20します。';
-  return msg;
+K.plateMessage=function(id,powered=false){
+  if(id==='xSpeed')return '次に動かす自分の駒のMPが+1されます。';
+  if(id==='xAttack')return '次の白/金ワザのダメージを+20します。';
+  if(id==='cassette')return powered?'強化カセット: 次の白/金ワザが+20。カセット技はさらに大きく強化されます。':'次の白/金ワザが+10。カセット技はさらに強化されます。';
+  if(id==='burstCassette')return powered?'強化カセット: 次の白/金ワザが+50されます。':'次の白/金ワザが+30されます。';
+  if(id==='goldCassette')return powered?'強化カセット: 次のバトルだけ白技がすべて金技になり、白/金ワザがさらに+10されます。':'次のバトルだけ、自分の白技がすべて金技になります。紫技に強く出られます。';
+  if(id==='swapCassette')return powered?'強化カセット: 次のバトルで勝った時、相手と位置を入れ替え、さらに相手にウェイトを付けます。':'次のバトルで勝った時、相手と位置を入れ替えます。';
+  if(id==='homeCassette')return powered?'強化カセット: 次に動かす駒が自分ゴールへ戻れます。戻る時に状態異常とMP低下も回復します。':'次に動かす自分の駒が自分ゴールへ戻れるようになります。';
+  if(id==='jumpCassette')return powered?'強化カセット: 次に動かす駒が飛び越え移動でき、すりぬけもできます。':'次に動かす自分の駒が1回だけ飛び越え移動できます。';
+  if(id==='phaseCassette')return powered?'強化カセット: 次に動かす駒がすりぬけ移動でき、飛び越えもできます。':'次に動かす自分の駒が1回だけすりぬけ移動できます。';
+  if(id==='healCassette')return powered?'強化カセット: 味方全体の状態異常とMP低下を回復し、ウェイトも1軽減します。':'味方全体の状態異常とMP低下を回復します。';
+  return '次のバトルに反映されます。';
 };
 K.ensurePlateDialog=function(){
   let box=document.getElementById('plateConfirmOverlay');
@@ -70,14 +87,14 @@ K.openPlateDialog=function(id){
   if(!K.s||K.s.turn!=='p1'||K.s.win||K.s.locked||K.s.phase!=='idle')return;
   if(K.s.usedPlateThisTurn){K.log('プレートは1ターンに1枚までです。');K.render&&K.render();return;}
   if(!K.s.p1plates||!K.s.p1plates.includes(id))return;
-  const p=K.PLATES[id];
+  const p=K.PLATES[id],powered=K.isStrengthenedCassette(id,'p1');
   const box=K.ensurePlateDialog();
   K.s.pendingPlateId=id;
   box.querySelector('#plateConfirmArt').src=p.asset;
-  box.querySelector('#plateConfirmArt').alt=p.name;
-  box.querySelector('#plateConfirmName').textContent=p.name;
-  box.querySelector('#plateConfirmDesc').textContent=p.desc;
-  box.querySelector('#plateConfirmEffect').textContent=K.plateMessage(id);
+  box.querySelector('#plateConfirmArt').alt=plateName(id,powered);
+  box.querySelector('#plateConfirmName').textContent=plateName(id,powered);
+  box.querySelector('#plateConfirmDesc').textContent=powered?'モジュリンの特性「カセットシンク」で強化カセットになっています。':p.desc;
+  box.querySelector('#plateConfirmEffect').textContent=K.plateMessage(id,powered);
   box.style.display='flex';
 };
 K.closePlateDialog=function(){
@@ -86,11 +103,11 @@ K.closePlateDialog=function(){
   if(box)box.style.display='none';
 };
 K.showPlateFlash=function(id){
-  const p=K.PLATES[id];
+  const p=K.PLATES[id],act=K.s&&K.s.activePlate,powered=!!(act&&act.id===id&&act.powered);
   if(!p)return;
   let box=document.getElementById('plateFlash');
   if(!box){box=document.createElement('div');box.id='plateFlash';box.className='plateFlash';document.body.appendChild(box);}
-  box.innerHTML='<div class="plateFlashCard"><img src="'+p.asset+'" alt="'+p.name+'"><div>'+p.name+'</div></div>';
+  box.innerHTML='<div class="plateFlashCard"><img src="'+p.asset+'" alt="'+plateName(id,powered)+'"><div>'+plateName(id,powered)+'</div></div>';
   box.classList.add('show');
   window.setTimeout(()=>box.classList.remove('show'),760);
 };
@@ -98,41 +115,49 @@ K.usePlate=function(id){
   if(!K.s||K.s.turn!=='p1'||K.s.win||K.s.locked||K.s.phase!=='idle')return;
   if(K.s.usedPlateThisTurn){K.log('プレートは1ターンに1枚までです。');K.render&&K.render();return;}
   if(!K.s.p1plates||!K.s.p1plates.includes(id))return;
+  const powered=K.isStrengthenedCassette(id,'p1');
   K.closePlateDialog&&K.closePlateDialog();
   K.s.usedPlateThisTurn=true;
-  K.showPlateFlash&&K.showPlateFlash(id);
   if(id==='healCassette'){
-    for(const p of [...K.s.p1.field,...K.s.p1.bench]){p.status.condition=null;p.status.mpMinus=0;}
-    K.log('プレート「'+K.PLATES[id].name+'」を使用。'+K.plateMessage(id));
+    for(const p of [...K.s.p1.field,...K.s.p1.bench]){
+      p.status.condition=null;
+      p.status.mpMinus=0;
+      if(powered)p.wait=Math.max(0,(p.wait||0)-1);
+    }
+    K.s.activePlate={owner:'p1',id,powered};
+    K.showPlateFlash&&K.showPlateFlash(id);
+    K.log('プレート「'+plateName(id,powered)+'」を使用。'+K.plateMessage(id,powered));
     consumePlateId('p1',id);
     return;
   }
-  K.s.activePlate={owner:'p1',id};
-  K.log('プレート「'+K.PLATES[id].name+'」を使用。'+K.plateMessage(id));
+  K.s.activePlate={owner:'p1',id,powered};
+  K.showPlateFlash&&K.showPlateFlash(id);
+  K.log('プレート「'+plateName(id,powered)+'」を使用。'+K.plateMessage(id,powered));
   K.render&&K.render();
 };
 K.consumeActivePlate=function(){
   if(!K.s||!K.s.activePlate)return;
   const act=K.s.activePlate;
   consumePlateId(act.owner,act.id);
-  K.log('プレート「'+K.PLATES[act.id].name+'」の効果が消費されました。');
+  K.log('プレート「'+plateName(act.id,act.powered)+'」の効果が消費されました。');
 };
 K.renderPlates=function(){
   const root=document.getElementById('plateTray');
   if(!root||!K.s)return;
   const active=K.s.activePlate&&K.s.activePlate.owner==='p1'?K.s.activePlate.id:null;
   const cards=(K.s.p1plates||[]).map(id=>{
-    const p=K.PLATES[id];
+    const p=K.PLATES[id],powered=K.isStrengthenedCassette(id,'p1');
     const isActive=active===id;
     const disabled=K.s.turn!=='p1'||!!K.s.win||K.s.locked||K.s.phase!=='idle'||K.s.usedPlateThisTurn||isActive;
-    return '<div class="plateCard'+(isActive?' active':'')+'">'
-      +'<img class="plateArt" src="'+p.asset+'" alt="'+p.name+'">'
-      +'<div class="plateName">'+p.name+'</div>'
-      +'<div class="plateDesc">'+p.desc+'</div>'
-      +'<button class="plateBtn" data-plate="'+id+'" '+(disabled?'disabled':'')+'>'+(isActive?'使用中':'使う')+'</button>'
+    return '<div class="plateCard'+(isActive?' active':'')+(powered?' powered':'')+'">'
+      +'<img class="plateArt" src="'+p.asset+'" alt="'+plateName(id,powered)+'">'
+      +'<div class="plateName">'+plateName(id,powered)+'</div>'
+      +'<div class="plateDesc">'+(powered?K.plateMessage(id,true):p.desc)+'</div>'
+      +'<button class="plateBtn" data-plate="'+id+'" '+(disabled?'disabled':'')+'>'+(isActive?'使用中':'確認')+'</button>'
       +'</div>';
   }).join('');
-  root.innerHTML='<div class="platesTitle"><span>プレート</span><span class="hintPlate">1ターン1枚 / カセット連携あり</span></div><div class="plateRow">'+cards+'</div>';
+  const sync=K.hasCassetteSync('p1')?'<span class="hintPlate">モジュリン: 強化カセット中</span>':'<span class="hintPlate">1ターン1枚 / カセット連携あり</span>';
+  root.innerHTML='<div class="platesTitle"><span>プレート</span>'+sync+'</div><div class="plateRow">'+cards+'</div>';
   root.querySelectorAll('[data-plate]').forEach(btn=>btn.onclick=()=>K.openPlateDialog(btn.dataset.plate));
 };
 if(!K._plateRenderPatched){
@@ -166,8 +191,9 @@ if(!K._plateValuePatched){
     const act=K.s&&K.s.activePlate;
     if(act&&p&&act.owner===p.owner){
       if(act.id==='xAttack'&&(seg.c==='white'||seg.c==='gold'))v+=20;
-      if(act.id==='cassette'&&(seg.c==='white'||seg.c==='gold'))v+=10;
-      if(act.id==='burstCassette'&&(seg.c==='white'||seg.c==='gold'))v+=30;
+      if(act.id==='cassette'&&(seg.c==='white'||seg.c==='gold'))v+=act.powered?20:10;
+      if(act.id==='burstCassette'&&(seg.c==='white'||seg.c==='gold'))v+=act.powered?50:30;
+      if(act.id==='goldCassette'&&act.powered&&(seg.c==='white'||seg.c==='gold'))v+=10;
     }
     return v;
   };
@@ -187,14 +213,19 @@ if(!K._cassetteMovePatched){
   const ability0=K.ability;
   K.ability=function(p,key){
     const act=K.s&&K.s.activePlate;
-    if(act&&p&&p.owner===act.owner&&act.id==='jumpCassette'&&key==='jump')return true;
-    if(act&&p&&p.owner===act.owner&&act.id==='phaseCassette'&&key==='passThrough')return true;
+    if(act&&p&&p.owner===act.owner){
+      if(act.id==='jumpCassette'&&key==='jump')return true;
+      if(act.id==='jumpCassette'&&act.powered&&key==='passThrough')return true;
+      if(act.id==='phaseCassette'&&key==='passThrough')return true;
+      if(act.id==='phaseCassette'&&act.powered&&key==='jump')return true;
+    }
     return ability0?ability0(p,key):false;
   };
   const blocked0=K.blockedFor;
   K.blockedFor=function(p){
     const act=K.s&&K.s.activePlate;
     if(act&&act.id==='phaseCassette'&&p&&p.owner===act.owner)return new Set();
+    if(act&&act.id==='jumpCassette'&&act.powered&&p&&p.owner===act.owner)return new Set();
     return blocked0?blocked0(p):new Set();
   };
   const moveTargets0=K.moveTargets;
@@ -212,7 +243,8 @@ if(!K._cassetteMovePatched){
     const act=K.s&&K.s.activePlate;
     if(act&&(act.id==='phaseCassette'||act.id==='jumpCassette')&&p&&p.owner===act.owner){
       const f=K.FIGURES[p.fig],old=f.ability;
-      f.ability=Object.assign({},old||{},act.id==='phaseCassette'?{passThrough:true}:{jump:true});
+      const add=act.id==='phaseCassette'?{passThrough:true,jump:!!act.powered}:{jump:true,passThrough:!!act.powered};
+      f.ability=Object.assign({},old||{},add);
       try{return entry0.call(this,p,owner);}finally{f.ability=old;}
     }
     return entry0.call(this,p,owner);
@@ -227,7 +259,7 @@ if(!K._plateBattlePatched){
     if(act&&act.id==='swapCassette'){
       const own=act.owner===a.owner?a:d;
       const ownSeg=own===a?as.seg:ds.seg;
-      if(ownSeg&&ownSeg.c!=='miss'&&ownSeg.c!=='blue')ownSeg.e=Object.assign({},ownSeg.e||{},{swap:true});
+      if(ownSeg&&ownSeg.c!=='miss'&&ownSeg.c!=='blue')ownSeg.e=Object.assign({},ownSeg.e||{},act.powered?{swap:true,wait:1}:{swap:true});
     }
     battle0.apply(this,arguments);
     if(battlePlate)window.setTimeout(()=>K.consumeActivePlate&&K.consumeActivePlate(),0);
@@ -239,6 +271,7 @@ if(!K._plateMovePatched){
   K.movePiece=function(p,node){
     const act=K.s&&K.s.activePlate;
     const useNow=!!(act&&(act.id==='xSpeed'||act.id==='phaseCassette'||act.id==='jumpCassette'||act.id==='homeCassette')&&act.owner===p.owner);
+    if(useNow&&act.id==='homeCassette'&&act.powered){p.status.condition=null;p.status.mpMinus=0;}
     const ret=move0.apply(this,arguments);
     if(useNow)window.setTimeout(()=>K.consumeActivePlate&&K.consumeActivePlate(),0);
     return ret;
@@ -257,7 +290,7 @@ if(!K._plateTurnPatched){
   const end0=K.endTurn;
   K.endTurn=function(){
     if(K.s&&K.s.activePlate&&K.s.activePlate.owner===K.s.turn){
-      K.log('プレート「'+K.PLATES[K.s.activePlate.id].name+'」は未使用のまま終了しました。');
+      K.log('プレート「'+plateName(K.s.activePlate.id,K.s.activePlate.powered)+'」は未使用のまま終了しました。');
       K.s.activePlate=null;
     }
     K.closePlateDialog&&K.closePlateDialog();
@@ -265,5 +298,9 @@ if(!K._plateTurnPatched){
     end0.apply(this,arguments);
     if(K.s&&prev!==K.s.turn&&K.s.turn==='p1')K.s.usedPlateThisTurn=false;
   };
+}
+if(K.FIGURES&&K.FIGURES.modulyn){
+  K.FIGURES.modulyn.ability={name:'カセットシンク',text:'モジュリンが盤面にいる間、自分のカセットが1段階上の「強化カセット」になります。',cassetteSync:true};
+  K.FIGURES.modulyn.desc='カセット信号を読み替える小型メカ。盤面にいるだけで自分のカセットを強化カセットへ変化させる。';
 }
 })(window.KOMA);
