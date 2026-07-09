@@ -3,16 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Cassette Clash</title>
+  <title>Rune Clash</title>
   <link rel="stylesheet" href="styles.css?v=20260710-5">
   <link rel="stylesheet" href="styles-patch.css?v=20260710-5">
   <link rel="stylesheet" href="hotfix.css?v=20260710-5">
+  <link rel="stylesheet" href="motion.css?v=20260710-5">
 </head>
 <body>
   <header class="topbar">
     <div>
-      <h1>Cassette Clash</h1>
-      <div class="sub">オリジナルBOSS AI版</div>
+      <h1>Rune Clash</h1>
+      <div class="sub">消えかけた精霊たちの紋章盤バトル</div>
     </div>
     <button id="resetBtn" class="reset">リセット</button>
   </header>
@@ -43,7 +44,7 @@
       </div>
 
       <div class="hint">
-        オリジナル6体デッキのBOSS AI版。長押しでユニット詳細、移動後に隣接敵を選ぶとバトル。カセットとコンボで盤面を崩します。
+        精霊たちは紋章盤の上でだけ姿を保てます。魔札は3ターンで薄れて消えるため、毎ターン使いどころを選んで攻めましょう。
       </div>
     </section>
     <div id="log" class="log"></div>
@@ -83,6 +84,7 @@
   <script src="src/original-party.js?v=20260710-5"></script>
   <script src="src/roster-100.js?v=20260710-5"></script>
   <script src="src/featured-characters.js?v=20260710-5"></script>
+  <script src="src/character-art.js?v=20260710-5"></script>
   <script src="src/character-icons.js?v=20260710-5"></script>
   <script src="src/state.js?v=20260710-5"></script>
   <script src="src/rules.js?v=20260710-5"></script>
@@ -94,10 +96,12 @@
   <script src="src/ai-learn-patch.js?v=20260710-5"></script>
   <script src="src/ui.js?v=20260710-5"></script>
   <script src="src/ui-patch.js?v=20260710-5"></script>
+  <script src="src/battle-animations.js?v=20260710-5"></script>
   <script src="src/poison-trails.js?v=20260710-5"></script>
   <script src="src/ai-train.js?v=20260710-5"></script>
   <script src="src/ai-run-safe.js?v=20260710-5"></script>
   <script src="src/plates.js?v=20260710-5"></script>
+  <script src="src/cassette-deck.js?v=20260710-5"></script>
   <script src="src/report.js?v=20260710-5"></script>
   <script src="src/main.js?v=20260710-5"></script>
 </body>
