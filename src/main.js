@@ -2,15 +2,6 @@ window.KOMA=window.KOMA||{};
 (function(K){
 K.restoreFigureAbilities=function(){
   if(K.installOriginalPartyPatches)K.installOriginalPartyPatches();
-  if(K.FIGURES.gengar){
-    K.FIGURES.gengar.ability={name:'すりぬけ',text:'このポケモン自身は他のポケモンを通過して移動できます。ただし他のポケモンがこのポケモンを通過できるわけではありません。',passThrough:true};
-  }
-  if(K.FIGURES.rotom){
-    K.FIGURES.rotom.ability={name:'ふゆう',text:'このポケモン自身は他のポケモンを通過して移動できます。ただし他のポケモンがこのポケモンを通過できるわけではありません。',passThrough:true};
-  }
-  if(K.FIGURES.greninja){
-    K.FIGURES.greninja.ability=null;
-  }
   K.isPassThrough=p=>p.status.condition==='sleep'||p.status.condition==='frozen';
 };
 K.setBossDecks=function(){
@@ -57,8 +48,9 @@ K.start=function(){
   K.seedPlates&&K.seedPlates();
   K.render();
 };
-function loadCss(href){const l=document.createElement('link');l.rel='stylesheet';l.href=href;document.head.appendChild(l);}
-function loadScript(src,done){const s=document.createElement('script');s.src=src;s.onload=done;s.onerror=done;document.body.appendChild(s);}
+function v(src){return src+(src.includes('?')?'&':'?')+'v=20260710-3';}
+function loadCss(href){const l=document.createElement('link');l.rel='stylesheet';l.href=v(href);document.head.appendChild(l);}
+function loadScript(src,done){const s=document.createElement('script');s.src=v(src);s.onload=done;s.onerror=done;document.body.appendChild(s);}
 window.addEventListener('DOMContentLoaded',()=>{
   K.restoreFigureAbilities&&K.restoreFigureAbilities();
   K.setBossDecks&&K.setBossDecks();
