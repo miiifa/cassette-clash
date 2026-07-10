@@ -27,6 +27,11 @@ const VIBES={
   stormrook:'クール系 / 嵐の鳥騎士'
 };
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function art(p){
+  const src=K.CHARACTER_ART&&K.CHARACTER_ART[p.fig];
+  if(!src)return null;
+  return '<img class="charImg charArt" src="'+src+'" alt="'+esc(p.n)+'" loading="eager">';
+}
 function sprite(p){
   const pos=K.CHARACTER_SPRITE_POS&&K.CHARACTER_SPRITE_POS[p.fig];
   if(!K.CHARACTER_SPRITE||!pos)return null;
@@ -43,7 +48,7 @@ function fallback(p){
   const sym=(K.TYPE_SYMBOLS&&K.TYPE_SYMBOLS[type])||'●';
   return '<span class="charFallback" style="background:'+esc(color)+'">'+esc(sym)+'</span>';
 }
-K.characterIconMarkup=function(p){return sprite(p)||fallback(p);};
+K.characterIconMarkup=function(p){return art(p)||sprite(p)||fallback(p);};
 K.characterIconSmall=function(p){return K.characterIconMarkup(p);};
 K.iconFor=function(p){return K.characterIconMarkup(p);};
 K.characterVibe=function(fig){return VIBES[fig]||'個性派';};
