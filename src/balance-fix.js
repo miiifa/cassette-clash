@@ -6,7 +6,7 @@ const base=K.baseValue;
 K.baseValue=function(seg,p){
   let v=base?base(seg,p):(seg.d||0);
   if(p&&p.owner==='p2'&&(seg.c==='white'||seg.c==='gold')){
-    if(p.boss)v-=20;
+    if(p.boss)v-=30;
     if(p.fig==='voidray'||p.fig==='thornogre'||p.fig==='mirrormoth'||p.fig==='blastboar'||p.fig==='stormrook')v-=10;
     v=Math.max(0,v);
   }
@@ -25,9 +25,10 @@ if(!K._bossBuffToneDownPatched){
       p.tuning=p.tuning||{};
       for(let i=0;i<wheel.length;i++){
         const seg=wheel[i];
-        if(seg.c==='miss')p.tuning[i]=(p.tuning[i]||0)+4;
-        else if(seg.c==='purple')p.tuning[i]=(p.tuning[i]||0)-3;
-        else if(seg.c==='white'||seg.c==='gold')p.tuning[i]=(p.tuning[i]||0)-2;
+        if(seg.c==='miss')p.tuning[i]=(p.tuning[i]||0)+6;
+        else if(seg.c==='blue')p.tuning[i]=(p.tuning[i]||0)-2;
+        else if(seg.c==='purple')p.tuning[i]=(p.tuning[i]||0)-5;
+        else if(seg.c==='white'||seg.c==='gold')p.tuning[i]=(p.tuning[i]||0)-4;
       }
     }
   };
