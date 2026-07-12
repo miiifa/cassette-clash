@@ -7,6 +7,7 @@ function runeName(id){const p=K.PLATES&&K.PLATES[id];const powered=K.isStrengthe
 function runeDesc(id){const p=K.PLATES&&K.PLATES[id];const powered=K.isStrengthenedCassette&&K.isStrengthenedCassette(id,'p1');return powered&&K.plateMessage?K.plateMessage(id,true):p&&p.desc||'';}
 function canUseBattleRune(id){return BATTLE_RUNES.includes(id)&&K.PLATES&&K.PLATES[id];}
 function battleRunes(){return hand().filter(canUseBattleRune);}
+function closePreBattle(){const o=document.getElementById('preBattleRuneOverlay');if(o)o.style.display='none';if(K.s){K.s.pendingPreBattleRune=null;K.s.pendingPreBattleRuneId=null;}}
 function useReason(){
   if(!K.s)return 'まだ使えません。';
   if(K.s.win)return '対局終了後は使えません。';
@@ -27,10 +28,12 @@ function ensureInfo(){
   if(o)return o;
   o=document.createElement('div');
   o.id='runeInfoOverlay';
-  o.innerHTML='<div class="runeInfoBox"><div class="runeInfoTitle" id="runeInfoTitle"></div><div class="runeInfoMain"><img id="runeInfoArt" alt=""><div><div id="runeInfoDesc"></div><div id="runeInfoState"></div></div></div><div class="runeInfoActions"><button id="runeInfoUse">使う</button><button id="runeInfoClose">閉じる</button></div></div>';
+  o.innerHTML='<div class="runeInfoBox"><button class="popupX" id="runeInfoX" type="button">×</button><div class="runeInfoTitle" id="runeInfoTitle"></div><div class="runeInfoMain"><img id="runeInfoArt" alt=""><div><div id="runeInfoDesc"></div><div id="runeInfoState"></div></div></div><div class="runeInfoActions"><button id="runeInfoUse">使う</button><button id="runeInfoClose">閉じる</button></div></div>';
   document.body.appendChild(o);
-  o.querySelector('#runeInfoClose').onclick=()=>{o.style.display='none';if(K.s)K.s.pendingPlateId=null;};
-  o.addEventListener('click',e=>{if(e.target===o){o.style.display='none';if(K.s)K.s.pendingPlateId=null;}});
+  const close=()=>{o.style.display='none';if(K.s)K.s.pendingPlateId=null;};
+  o.querySelector('#runeInfoClose').onclick=close;
+  o.querySelector('#runeInfoX').onclick=close;
+  o.addEventListener('click',e=>{if(e.target===o)close();});
   return o;
 }
 K.openRuneInfo=function(id){
@@ -51,10 +54,11 @@ function ensurePrompt(){
   if(o)return o;
   o=document.createElement('div');
   o.id='preBattleRuneOverlay';
-  o.innerHTML='<div class="preBattleRuneBox"><div class="preBattleRuneTitle">バトル前に魔札を使う？</div><div class="preBattleRuneSub">使う魔札を選んでから、下の「この魔札を使う」で確定します。</div><div id="preBattleRuneList" class="preBattleRuneList"></div><div id="preBattleRunePreview" class="preBattleRunePreview">魔札を選んでください。</div><div class="preBattleRuneActions"><button id="preBattleRuneNo">使わないでバトル</button><button id="preBattleRuneUse" disabled>この魔札を使う</button><button id="preBattleRuneClose">戻る</button></div></div>';
+  o.innerHTML='<div class="preBattleRuneBox"><button class="popupX" id="preBattleRuneX" type="button">×</button><div class="preBattleRuneTitle">バトル前に魔札を使う？</div><div class="preBattleRuneSub">魔札を選択 → 「この魔札を使う」で確定。</div><div id="preBattleRuneList" class="preBattleRuneList"></div><div id="preBattleRunePreview" class="preBattleRunePreview">魔札を選んでください。</div><div class="preBattleRuneActions"><button id="preBattleRuneNo">使わない</button><button id="preBattleRuneUse" disabled>この魔札を使う</button><button id="preBattleRuneClose">閉じる</button></div></div>';
   document.body.appendChild(o);
-  o.querySelector('#preBattleRuneClose').onclick=()=>{o.style.display='none';K.s.pendingPreBattleRune=null;K.s.pendingPreBattleRuneId=null;};
-  o.addEventListener('click',e=>{if(e.target===o){o.style.display='none';K.s.pendingPreBattleRune=null;K.s.pendingPreBattleRuneId=null;}});
+  o.querySelector('#preBattleRuneClose').onclick=closePreBattle;
+  o.querySelector('#preBattleRuneX').onclick=closePreBattle;
+  o.addEventListener('click',e=>{if(e.target===o)closePreBattle();});
   return o;
 }
 function activateRuneNow(id){
@@ -69,10 +73,7 @@ function activateRuneNow(id){
   return true;
 }
 function proceed(defenderId){
-  const o=document.getElementById('preBattleRuneOverlay');
-  if(o)o.style.display='none';
-  K.s.pendingPreBattleRune=null;
-  K.s.pendingPreBattleRuneId=null;
+  closePreBattle();
   K.s.skipPreBattleRunePrompt=true;
   try{K.startBattle(defenderId);}finally{K.s.skipPreBattleRunePrompt=false;}
 }
@@ -83,7 +84,7 @@ K.showPreBattleRunePrompt=function(defenderId){
   K.s.pendingPreBattleRune=defenderId;
   K.s.pendingPreBattleRuneId=null;
   const list=o.querySelector('#preBattleRuneList'),preview=o.querySelector('#preBattleRunePreview'),use=o.querySelector('#preBattleRuneUse');
-  list.innerHTML=opts.map(id=>{const p=K.PLATES[id];return '<button class="preBattleRuneCard" data-rune="'+id+'"><img src="'+p.asset+'" alt="'+runeName(id)+'"><span class="preBattleRuneName">'+runeName(id)+'</span><span class="preBattleRuneLife">寿命 '+lifeOf(id)+'</span><span class="preBattleRuneDesc">'+runeDesc(id)+'</span></button>';}).join('');
+  list.innerHTML=opts.map(id=>{const p=K.PLATES[id];return '<button class="preBattleRuneCard" data-rune="'+id+'"><img src="'+p.asset+'" alt="'+runeName(id)+'"><span class="preBattleRuneName">'+runeName(id)+'</span><span class="preBattleRuneLife">寿命 '+lifeOf(id)+'</span></button>';}).join('');
   preview.textContent='魔札を選んでください。';
   use.disabled=true;
   list.querySelectorAll('[data-rune]').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.rune;K.s.pendingPreBattleRuneId=id;list.querySelectorAll('.preBattleRuneCard').forEach(x=>x.classList.toggle('selected',x===btn));preview.textContent='選択中: '+runeName(id)+' / '+runeDesc(id);use.disabled=false;});
