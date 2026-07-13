@@ -14,6 +14,7 @@ function segz(s){return s?{c:s.c,n:s.n,d:s.d,e:s.e||null}:null;}
 function fz(f){if(!f)return null;const out={};for(const k of ['goalNow','blockEnemyGoal','goalPressure','enemyGoalDanger','battleExpected','surroundGain','surroundRisk','centerControl','spawnBlock','targetOccupy','pcLead','fieldLead','statusPressure','tempo','clearOwnGoal','postBattleGoalRisk'])if(f[k])out[k]=Math.round(f[k]*100)/100;return out;}
 function planz(pl){return pl?{t:pl.type,p:pz(pl.piece||pl.p),to:pl.to||pl.n||null,d:pz(pl.defender||pl.d),s:pl.score==null?null:Math.round(pl.score),f:fz(pl.features)}:null;}
 function boardz(board){const o={};if(!board)return o;for(const k of Object.keys(board)){const p=board[k];if(p)o[k]=[p.owner,p.fig,p.name||p.n,p.mp,p.wait||0,p.status&&p.status.condition||null];}return o;}
+function zonez(z){return{bench:(z&&z.bench||[]).map(pz),field:(z&&z.field||[]).map(pz),pc:(z&&z.pc||[]).map(pz)};}
 function slimEvent(e){
   const d=e.data||{},base={i:e.i,tc:e.turnCount,t:e.turn,ph:e.phase,ty:e.type};
   if(e.type==='match_start')return {...base,decks:d.decks,targets:d.targets,spawn:d.spawn};
@@ -24,6 +25,7 @@ function slimEvent(e){
   if(e.type==='strategic_action')return {...base,o:d.owner,pl:planz(d.plan),ab:!!d.actualBattle};
   if(e.type==='ai_plan_code'||e.type==='ai_plan_generic')return {...base,ls:d.legalSummary,b:planz(d.base),c:planz(d.code||d.learned),ch:planz(d.chosen),v:d.codeLearningVersion||null};
   if(e.type==='ai_target_guard_hold')return {...base,target:d.target,guard:d.guard,threats:d.threats,blocked:d.blockedPlan};
+  if(e.type==='ai_anti_surround')return {...base,guard:d.guard,blockNode:d.blockNode,enemyNeighbors:d.enemyNeighbors,enemyFillers:d.enemyFillers,chosen:d.chosen,base:d.base};
   if(e.type==='turn_end_snapshot')return {...base,o:d.owner,ls:d.legal&&d.legal.counts,goals:(d.legal&&d.legal.goals||[]).map(x=>({t:x.type,p:pz(x.piece),to:x.to})),threats:(d.legal&&d.legal.enemyGoalThreats||[]).map(x=>({t:x.type,p:pz(x.piece),to:x.to}))};
   if(e.type==='tap_possible_no_action')return {...base,target:d.target&&{node:d.target.node,p:pz(d.target.piece)},reason:d.reason,before:d.before};
   if(e.type==='user_tap'){
@@ -44,7 +46,7 @@ function compactReport(rep){
     res:{w:rep.winner,t:rep.turn,tc:rep.turnCount,ph:rep.phase,r:rep.reason,detail:rep.winDetail&&{r:rep.winDetail.reason,w:rep.winDetail.winner,target:rep.winDetail.target,p:pz(rep.winDetail.piece)}},
     targets:rep.targets,
     plates:{p1:rep.plates&&rep.plates.p1Remaining,active:rep.plates&&rep.plates.active,used:rep.plates&&rep.plates.usedPlateThisTurn},
-    zones:{p1:{pc:(rep.zones&&rep.zones.p1&&rep.zones.p1.pc||[]).map(pz),field:(rep.zones&&rep.zones.p1&&rep.zones.p1.field||[]).map(pz)},p2:{pc:(rep.zones&&rep.zones.p2&&rep.zones.p2.pc||[]).map(pz),field:(rep.zones&&rep.zones.p2&&rep.zones.p2.field||[]).map(pz)}},
+    zones:{p1:zonez(rep.zones&&rep.zones.p1),p2:zonez(rep.zones&&rep.zones.p2)},
     board:boardz(rep.board),
     diag:{imm:rep.diagnostics&&rep.diagnostics.immediateGoalActions,stale:rep.diagnostics&&rep.diagnostics.staleNonFieldPositions,tail:(rep.diagnostics&&rep.diagnostics.tailLog||[]).slice(0,18)},
     analysis:rep.analysis,
