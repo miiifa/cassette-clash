@@ -27,6 +27,7 @@ function slimEvent(e){
   if(e.type==='ai_target_guard_hold')return {...base,target:d.target,guard:d.guard,threats:d.threats,blocked:d.blockedPlan};
   if(e.type==='ai_anti_surround')return {...base,guard:d.guard,blockNode:d.blockNode,enemyNeighbors:d.enemyNeighbors,enemyFillers:d.enemyFillers,chosen:d.chosen,base:d.base};
   if(e.type==='ai_yomi'||e.type==='ai_yomi_scan')return {...base,predicted:d.predicted,counter:d.counter,basePlan:d.base,used:e.type==='ai_yomi'};
+  if(e.type==='ai_ev_choice')return {...base,v:d.version,basePlan:d.base,evBest:d.evBest,top:d.top,chosen:d.chosen,used:!!d.used};
   if(e.type==='turn_end_snapshot')return {...base,o:d.owner,ls:d.legal&&d.legal.counts,goals:(d.legal&&d.legal.goals||[]).map(x=>({t:x.type,p:pz(x.piece),to:x.to})),threats:(d.legal&&d.legal.enemyGoalThreats||[]).map(x=>({t:x.type,p:pz(x.piece),to:x.to}))};
   if(e.type==='tap_possible_no_action')return {...base,target:d.target&&{node:d.target.node,p:pz(d.target.piece)},reason:d.reason,before:d.before};
   if(e.type==='user_tap'){
