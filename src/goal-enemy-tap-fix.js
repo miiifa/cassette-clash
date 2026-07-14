@@ -3,7 +3,7 @@ window.KOMA=window.KOMA||{};
 if(K._goalEnemyTapFixPatched)return;
 K._goalEnemyTapFixPatched=true;
 function attacker(){return K.byId&&K.byId(K.s&&(K.s.pendingAttacker||K.s.selectedId));}
-function canBattle(a,p){return !!(a&&p&&p.owner!==a.owner&&p.pos&&a.pos&&p.status.condition!=='sleep'&&p.status.condition!=='frozen'&&K.neigh(a.pos).includes(p.pos));}
+function canBattle(a,p){return !!(a&&p&&p.owner!==a.owner&&p.pos&&a.pos&&a.status.condition!=='sleep'&&a.status.condition!=='frozen'&&K.neigh(a.pos).includes(p.pos));}
 function goalAtEvent(e){
   const board=document.getElementById('board');
   if(!board||!K.NODES)return null;
@@ -28,7 +28,7 @@ function tryGoalEnemy(e){
   const p=K.at&&K.at(node),a=attacker();
   if(!p||!a||p.owner===a.owner)return false;
   if(!canBattle(a,p)){
-    if(p.owner!==K.s.turn){K.log&&K.log('ゴール上の'+p.n+'は、隣接している駒で選ぶとバトルできます。');K.render&&K.render();}
+    if(p.owner!==K.s.turn){K.log&&K.log('ゴール上の'+p.n+'は、隣接している行動可能な駒で選ぶとバトルできます。');K.render&&K.render();}
     return false;
   }
   e.preventDefault&&e.preventDefault();
