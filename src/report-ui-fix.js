@@ -30,6 +30,7 @@ function slimEvent(e){
   if(e.type==='ai_yomi'||e.type==='ai_yomi_scan')return {...base,predicted:d.predicted,counter:d.counter,basePlan:d.base,used:e.type==='ai_yomi'};
   if(e.type==='ai_ev_choice')return {...base,v:d.version,basePlan:d.base,evBest:d.evBest,top:d.top,chosen:d.chosen,used:!!d.used};
   if(e.type==='ai_emergency_block')return {...base,chosen:d.chosen,enemyThreats:d.enemyThreats,ownGoal:d.ownGoal};
+  if(e.type==='ai_guard_surround_emergency'||e.type==='ai_guard_surround_no_good_block')return {...base,chosen:d.chosen||d.candidate,enemyThreats:d.enemyThreats,used:e.type==='ai_guard_surround_emergency'};
   if(e.type==='ai_decision_final')return {...base,...slimDecision(d)};
   if(e.type==='ai_guard_core_hold'||e.type==='ai_guard_core_skip')return {...base,target:d.target,guard:d.guard,threats:d.threats,reason:d.reason,blocked:d.blockedPlan,chosen:d.chosen||null};
   if(e.type==='turn_end_snapshot')return {...base,o:d.owner,ls:d.legal&&d.legal.counts,goals:(d.legal&&d.legal.goals||[]).map(x=>({t:x.type,p:pz(x.piece),to:x.to})),threats:(d.legal&&d.legal.enemyGoalThreats||[]).map(x=>({t:x.type,p:pz(x.piece),to:x.to}))};
