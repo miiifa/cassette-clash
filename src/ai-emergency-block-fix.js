@@ -13,16 +13,25 @@ function goalThreatActions(owner){
   return out;
 }
 function ownGoalNow(owner){return goalThreatActions(owner)[0]||null;}
+function immediateSurroundDeath(owner,node){
+  const enemy=K.other(owner),ns=K.neigh(node);
+  return !!(ns.length&&ns.every(n=>{const o=K.at(n);return o&&o.owner===enemy;}));
+}
 function occupyGoal(owner,enemy){
   const goal=K.TARGET[enemy];
   if(!goal||K.at(goal))return null;
-  let best=null;
-  function set(plan,score,why){if(!best||score>best.score)best={...plan,score,why};}
+  let best=null,suicidal=[];
+  function set(plan,score,why){
+    const out={...plan,score,why,suicide:immediateSurroundDeath(owner,plan.n)};
+    if(out.suicide){suicidal.push(out);return;}
+    if(!best||score>best.score)best=out;
+  }
   for(const p of arr(K.s[owner].field)){
     if(!K.canAct(p))continue;
     if(K.moveTargets(p,owner).includes(goal))set({type:'move',p,n:goal},980000+(p.pos===goal?1000:0),'emergency_occupy_goal');
   }
   for(const p of arr(K.s[owner].bench))if(K.entryTargets(p,owner).includes(goal))set({type:'deploy',p,n:goal},955000,'emergency_deploy_goal');
+  if(!best&&suicidal.length)return {none:true,why:'no_safe_goal_block',blockedSuicides:suicidal};
   return best;
 }
 function hitThreat(owner,threats){
@@ -42,15 +51,25 @@ function chooseEmergency(owner){
   if(ownWin)return {...ownWin,score:1000000,why:'emergency_take_own_goal'};
   const threats=goalThreatActions(enemy);
   if(!threats.length)return null;
-  return occupyGoal(owner,enemy)||hitThreat(owner,threats)||null;
+  const block=occupyGoal(owner,enemy);
+  if(block&&block.none){
+    const hit=hitThreat(owner,threats);
+    return hit||{none:true,why:'no_safe_answer',enemyThreats:threats,blockedSuicides:block.blockedSuicides};
+  }
+  return block||hitThreat(owner,threats)||{none:true,why:'no_legal_answer',enemyThreats:threats};
 }
-function planOut(p){return p?{type:p.type,piece:mini(p.p),to:p.n||null,defender:mini(p.d),score:Math.round(p.score||0),why:p.why||null}:null;}
+function planOut(p){return p?{type:p.type,piece:mini(p.p),to:p.n||null,defender:mini(p.d),score:Math.round(p.score||0),why:p.why||null,suicide:!!p.suicide}:null;}
 const choose0=K.chooseAiPlan;
 if(choose0){
   K.chooseAiPlan=function(){
     const emergency=chooseEmergency('p2');
     if(emergency){
       const enemyThreats=goalThreatActions('p1');
+      if(emergency.none){
+        K.log&&K.log('AI緊急防衛: 即ゴール脅威あり。ただし安全に止める手がありません。');
+        if(K.learningAddEvent)K.learningAddEvent('ai_emergency_block',{chosen:null,noSafe:true,reason:emergency.why,enemyThreats:enemyThreats.map(planOut),blockedSuicides:arr(emergency.blockedSuicides).map(planOut),ownGoal:planOut(ownGoalNow('p2'))});
+        return null;
+      }
       if(emergency.why!=='emergency_take_own_goal')K.log&&K.log('AI緊急防衛: 次ターンのゴール負けを止めます。');
       if(K.learningAddEvent)K.learningAddEvent('ai_emergency_block',{chosen:planOut(emergency),enemyThreats:enemyThreats.map(planOut),ownGoal:planOut(ownGoalNow('p2'))});
       return emergency;
