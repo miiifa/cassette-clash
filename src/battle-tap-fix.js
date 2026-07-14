@@ -12,7 +12,7 @@ function tagFigures(){
   });
 }
 function attacker(){return K.byId&&K.byId(K.s&& (K.s.pendingAttacker||K.s.selectedId));}
-function canBattle(a,p){return !!(a&&p&&p.owner!==a.owner&&p.pos&&a.pos&&p.status.condition!=='sleep'&&p.status.condition!=='frozen'&&K.neigh(a.pos).includes(p.pos));}
+function canBattle(a,p){return !!(a&&p&&p.owner!==a.owner&&p.pos&&a.pos&&a.status.condition!=='sleep'&&a.status.condition!=='frozen'&&K.neigh(a.pos).includes(p.pos));}
 function tryStartFromPiece(p,e){
   if(!K.s||K.s.locked||K.s.win)return false;
   if(!(K.s.phase==='chooseTarget'||K.s.phase==='chooseBattle'))return false;
