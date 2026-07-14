@@ -2,7 +2,7 @@ window.KOMA=window.KOMA||{};
 (function(K){
 if(K._aiEvFixPatched)return;
 K._aiEvFixPatched=true;
-const EV_VERSION='20260713-ev-1';
+const EV_VERSION='20260713-ev-2';
 function arr(x){return Array.isArray(x)?x:[];}
 function mini(p){return p?{id:p.id,name:p.n,fig:p.fig,pos:p.pos||null,owner:p.owner,mp:p.mp,wait:p.wait||0,cond:p.status&&p.status.condition||null,mpMinus:p.status&&p.status.mpMinus||0,boss:!!p.boss}:null;}
 function dist(a,b){if(!a||!b)return 99;if(a===b)return 0;const seen=new Map([[a,0]]),q=[a];while(q.length){const c=q.shift(),d=seen.get(c);for(const n of K.neigh(c)){if(seen.has(n))continue;if(n===b)return d+1;seen.set(n,d+1);q.push(n);}}return 99;}
@@ -34,8 +34,9 @@ function scorePlan(plan,owner,shallow){const before=boardScore(owner);let after=
 function summary(ev){return ev?{type:ev.plan.type,piece:mini(ev.plan.p),to:ev.plan.n||null,defender:mini(ev.plan.d),score:Math.round(ev.score),delta:ev.delta,tactical:ev.tactical,risk:ev.risk,reasons:ev.reasons,battle:ev.battle}:null;}
 function bestEv(owner){const ranked=genPlans(owner).map(p=>scorePlan(p,owner,false)).sort((a,b)=>b.score-a.score);return {best:ranked[0]||null,top:ranked.slice(0,5).map(summary)};}
 function immediate(plan,owner){return plan&&(plan.type==='move'||plan.type==='deploy')&&plan.n===K.TARGET[owner];}
+function chosenSummary(plan,note){return plan?{type:plan.type,piece:mini(plan.p),to:plan.n||null,defender:mini(plan.d),score:Math.round(plan.score||0),why:plan.why||note||null}:null;}
 const choose0=K.chooseAiPlan;
-if(choose0){K.chooseAiPlan=function(){const base=choose0.apply(this,arguments);if(immediate(base,'p2'))return base;const ev=bestEv('p2');const baseEv=base?scorePlan(base,'p2',false):null;let chosen=base;if(ev.best&&(!baseEv||ev.best.score>baseEv.score+75000)){chosen={...ev.best.plan,score:ev.best.score,why:'ev_board_expected_value'};}
-  if(K.learningAddEvent)K.learningAddEvent('ai_ev_choice',{version:EV_VERSION,base:summary(baseEv),evBest:summary(ev.best),top:ev.top,chosen:chosen?{type:chosen.type,piece:mini(chosen.p),to:chosen.n||null,defender:mini(chosen.d),score:Math.round(chosen.score||0),why:chosen.why||null}:null,used:chosen!==base});
+if(choose0){K.chooseAiPlan=function(){const base=choose0.apply(this,arguments);const baseEv=base?scorePlan(base,'p2',false):null;if(immediate(base,'p2')){if(K.learningAddEvent)K.learningAddEvent('ai_ev_choice',{version:EV_VERSION,base:summary(baseEv),evBest:summary(baseEv),top:baseEv?[summary(baseEv)]:[],chosen:chosenSummary(base,'immediate_goal'),used:false,note:'immediate_goal_kept'});return base;}const ev=bestEv('p2');let chosen=base;if(ev.best&&(!baseEv||ev.best.score>baseEv.score+75000)){chosen={...ev.best.plan,score:ev.best.score,why:'ev_board_expected_value'};}
+  if(K.learningAddEvent)K.learningAddEvent('ai_ev_choice',{version:EV_VERSION,base:summary(baseEv),evBest:summary(ev.best),top:ev.top,chosen:chosenSummary(chosen),used:chosen!==base,note:chosen!==base?'changed_by_expected_value':'kept_base'});
   if(chosen!==base&&K.log)K.log('AI期待値: 勝率/死亡リスク/盤面損得/相手の返しを見て手を変更します。');return chosen;};}
 })(window.KOMA);
