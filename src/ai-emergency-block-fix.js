@@ -34,13 +34,39 @@ function occupyGoal(owner,enemy){
   if(!best&&suicidal.length)return {none:true,why:'no_safe_goal_block',blockedSuicides:suicidal};
   return best;
 }
+function battleScore(a,d){try{return K.battleScore?K.battleScore(a,d):0;}catch(e){return 0;}}
 function hitThreat(owner,threats){
   let best=null;
   function set(plan,score,why){if(!best||score>best.score)best={...plan,score,why};}
   for(const th of threats){
     if(!th.p||!th.p.pos)continue;
     for(const p of arr(K.s[owner].field)){
-      if(canBattle(p,th.p))set({type:'battle',p,d:th.p},850000+(K.battleScore?K.battleScore(p,th.p)*30:0),'emergency_battle_goal_threat');
+      if(canBattle(p,th.p))set({type:'battle',p,d:th.p},850000+battleScore(p,th.p)*30,'emergency_battle_goal_threat');
+    }
+  }
+  return best;
+}
+function pressureThreat(owner,threats){
+  let best=null;
+  function set(plan,score,why,target){
+    if(immediateSurroundDeath(owner,plan.n))return;
+    const out={...plan,score,why,pressureTarget:target};
+    if(!best||score>best.score)best=out;
+  }
+  for(const th of threats){
+    if(!th.p||!th.p.pos)continue;
+    for(const p of arr(K.s[owner].field)){
+      if(!K.canAct(p))continue;
+      for(const n of K.moveTargets(p,owner)){
+        if(K.at(n))continue;
+        if(K.neigh(n).includes(th.p.pos))set({type:'move',p,n},785000+battleScore(p,th.p)*25,'emergency_mark_goal_threat',th.p);
+      }
+    }
+    for(const p of arr(K.s[owner].bench)){
+      for(const n of K.entryTargets(p,owner)){
+        if(K.at(n))continue;
+        if(K.neigh(n).includes(th.p.pos))set({type:'deploy',p,n},805000+battleScore(p,th.p)*25,'emergency_deploy_to_battle_threat',th.p);
+      }
     }
   }
   return best;
@@ -52,13 +78,12 @@ function chooseEmergency(owner){
   const threats=goalThreatActions(enemy);
   if(!threats.length)return null;
   const block=occupyGoal(owner,enemy);
-  if(block&&block.none){
-    const hit=hitThreat(owner,threats);
-    return hit||{none:true,why:'no_safe_answer',enemyThreats:threats,blockedSuicides:block.blockedSuicides};
-  }
-  return block||hitThreat(owner,threats)||{none:true,why:'no_legal_answer',enemyThreats:threats};
+  const hit=hitThreat(owner,threats);
+  const pressure=pressureThreat(owner,threats);
+  if(block&&block.none)return hit||pressure||{none:true,why:'no_safe_answer',enemyThreats:threats,blockedSuicides:block.blockedSuicides};
+  return block||hit||pressure||{none:true,why:'no_legal_answer',enemyThreats:threats};
 }
-function planOut(p){return p?{type:p.type,piece:mini(p.p),to:p.n||null,defender:mini(p.d),score:Math.round(p.score||0),why:p.why||null,suicide:!!p.suicide}:null;}
+function planOut(p){return p?{type:p.type,piece:mini(p.p),to:p.n||null,defender:mini(p.d),pressureTarget:mini(p.pressureTarget),score:Math.round(p.score||0),why:p.why||null,suicide:!!p.suicide}:null;}
 const choose0=K.chooseAiPlan;
 if(choose0){
   K.chooseAiPlan=function(){
