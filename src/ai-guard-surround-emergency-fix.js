@@ -31,23 +31,36 @@ function goalThreatActions(owner){
   for(const p of arr(K.s[owner].bench))if(K.entryTargets(p,owner).includes(goal))out.push({type:'deploy',p,n:goal});
   return out;
 }
-function blockers(owner,target){
+function blockers(owner,target,skipId){
   const out=[];
-  for(const p of arr(K.s&&K.s[owner]&&K.s[owner].field))if(canAct(p)&&K.moveTargets(p,owner).includes(target))out.push({type:'move',p,n:target});
+  if(!target)return out;
+  for(const p of arr(K.s&&K.s[owner]&&K.s[owner].field))if((!skipId||p.id!==skipId)&&canAct(p)&&K.moveTargets(p,owner).includes(target))out.push({type:'move',p,n:target});
   for(const p of arr(K.s&&K.s[owner]&&K.s[owner].bench))if(K.entryTargets(p,owner).includes(target))out.push({type:'deploy',p,n:target});
   return out;
 }
 function battlePlans(owner,enemies){
   const out=[];
   for(const e of enemies){
-    if(!e||!e.pos)return out;
+    if(!e||!e.pos)continue;
     for(const p of arr(K.s&&K.s[owner]&&K.s[owner].field)){
       if(canAct(p)&&K.neigh(p.pos).includes(e.pos))out.push({type:'battle',p,d:e,score:880000+(K.battleScore?K.battleScore(p,e)*30:0),why:'emergency_hit_surround_piece'});
     }
   }
   return out;
 }
+function guardRescue(owner){
+  const enemy=K.other(owner),target=K.TARGET[enemy],guard=arr(K.s&&K.s[owner]&&K.s[owner].field).find(p=>p.pos===target);
+  if(!guard)return null;
+  const danger=futureSurroundDanger(owner,target);
+  if(!danger)return null;
+  const fillBlocks=blockers(owner,danger.fillNode,guard.id).filter(p=>!wouldBeSurrounded(owner,p.n)).map(p=>({...p,score:970000,why:'preempt_block_guard_surround',surroundDanger:danger}));
+  if(fillBlocks.length)return fillBlocks.sort((a,b)=>b.score-a.score)[0];
+  const hits=battlePlans(owner,danger.enemyNs.map(x=>x.piece)).map(p=>({...p,score:p.score+65000,why:'preempt_hit_guard_surround_piece',surroundDanger:danger})).sort((a,b)=>b.score-a.score);
+  return hits[0]||null;
+}
 function chooseStop(owner){
+  const pre=guardRescue(owner);
+  if(pre)return pre;
   const enemy=K.other(owner),target=K.TARGET[enemy],threats=goalThreatActions(enemy);
   if(!threats.length)return null;
   const bs=blockers(owner,target).map(p=>{
@@ -67,6 +80,16 @@ const choose0=K.chooseAiPlan;
 if(choose0){
   K.chooseAiPlan=function(){
     const plan=chooseStop('p2');
+    if(plan&&plan.why==='preempt_block_guard_surround'){
+      K.log&&K.log('AI緊急防衛: ゴール守備駒の包囲を先に塞ぎます。');
+      if(K.learningAddEvent)K.learningAddEvent('ai_guard_surround_emergency',{chosen:planOut(plan),preempt:true,enemyThreats:goalThreatActions('p1').map(planOut)});
+      return plan;
+    }
+    if(plan&&plan.why==='preempt_hit_guard_surround_piece'){
+      K.log&&K.log('AI緊急防衛: ゴール守備駒を包囲しようとする敵を先に攻撃します。');
+      if(K.learningAddEvent)K.learningAddEvent('ai_guard_surround_emergency',{chosen:planOut(plan),preempt:true,enemyThreats:goalThreatActions('p1').map(planOut)});
+      return plan;
+    }
     if(plan&&plan.why==='emergency_block_goal_safe'){
       K.log&&K.log('AI緊急防衛: 包囲されない形でゴールを塞ぎます。');
       if(K.learningAddEvent)K.learningAddEvent('ai_guard_surround_emergency',{chosen:planOut(plan),enemyThreats:goalThreatActions('p1').map(planOut)});
