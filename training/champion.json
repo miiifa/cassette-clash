@@ -1,0 +1,28 @@
+{
+  "schema": "rc-ai-champion.v1",
+  "generation": 0,
+  "version": "20260722-selfplay-1",
+  "updatedAt": "2026-07-22T00:00:00.000Z",
+  "weights": {
+    "goalNow": 1000000,
+    "allowImmediateGoal": 1250000,
+    "blockGoal": 180000,
+    "targetHold": 145000,
+    "progress": 115,
+    "mobility": 18,
+    "opponentMobility": 20,
+    "fieldValue": 340,
+    "pcValue": 1250,
+    "statusValue": 1,
+    "surroundRisk": 980,
+    "battleExpected": 1,
+    "replyWeight": 0.68,
+    "downsideWeight": 0.72,
+    "upsideWeight": 0.08,
+    "battleThreshold": -30,
+    "threatBattleBonus": 90000,
+    "leadRisk": 1.05,
+    "balancedRisk": 0.72,
+    "chaseRisk": 0.38
+  }
+}
