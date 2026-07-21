@@ -40,6 +40,9 @@ function holdLog(info,plan){
   K.log&&K.log('AI警戒: '+info.guard.n+'は'+info.target+'を守ります。'+reason+'待機。');
   if(K.learningAddEvent)K.learningAddEvent('ai_target_guard_hold',{target:info.target,guard:{id:info.guard.id,name:info.guard.n,fig:info.guard.fig,pos:info.guard.pos},threats:info.threats.map(p=>({id:p.id,name:p.n,fig:p.fig,pos:p.pos||null,owner:p.owner})),blockedPlan:{type:plan.type,piece:plan.p?{id:plan.p.id,name:plan.p.n,fig:plan.p.fig,pos:plan.p.pos||null}:null,to:plan.n||null,defender:plan.d?{id:plan.d.id,name:plan.d.n,fig:plan.d.fig,pos:plan.d.pos||null}:null,score:plan.score||0},conservative:!info.threats.length});
 }
+function holdPlan(info,blocked){
+  return {type:'hold',p:info.guard,score:2700000,why:'target_guard_hold',blockedPlan:blocked};
+}
 const choose0=K.chooseAiPlan;
 if(choose0){
   K.chooseAiPlan=function(){
@@ -47,9 +50,27 @@ if(choose0){
     const info=guardInfo('p2');
     if(unsafeGuardPlan(plan,info)){
       holdLog(info,plan);
-      return null;
+      return holdPlan(info,plan);
     }
     return plan;
+  };
+}
+const run0=K.runAi;
+if(run0&&!K._aiTargetGuardRunPatched){
+  K._aiTargetGuardRunPatched=true;
+  K.runAi=function(){
+    const s=K.s;
+    if(!s||!s.ai||s.turn!=='p2'||s.win||s.locked||s.phase!=='idle')return run0.apply(this,arguments);
+    const plan=K.chooseAiPlan&&K.chooseAiPlan();
+    if(plan&&plan.type==='hold'){
+      K.log&&K.log('AIはゴール封鎖を維持しました。');
+      K.endTurn();
+      return;
+    }
+    const saved=K.chooseAiPlan;
+    K.chooseAiPlan=function(){return plan;};
+    try{return run0.apply(this,arguments);}
+    finally{K.chooseAiPlan=saved;}
   };
 }
 })(window.KOMA);
