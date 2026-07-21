@@ -48,7 +48,7 @@ K.start=function(){
   K.seedPlates&&K.seedPlates();
   K.render();
 };
-function v(src){return src+(src.includes('?')?'&':'?')+'v=20260710-3';}
+function v(src){return src+(src.includes('?')?'&':'?')+'v=20260722-quality-1';}
 function loadCss(href){const l=document.createElement('link');l.rel='stylesheet';l.href=v(href);document.head.appendChild(l);}
 function loadScript(src,done){const s=document.createElement('script');s.src=v(src);s.onload=done;s.onerror=done;document.body.appendChild(s);}
 window.addEventListener('DOMContentLoaded',()=>{
@@ -57,7 +57,11 @@ window.addEventListener('DOMContentLoaded',()=>{
   loadCss('learning-ui.css');
   loadScript('src/ai-defaults.js',()=>{
     loadScript('src/lw.js',()=>{
-      loadScript('src/learning-ui.js',()=>{K.bindUi();K.start();});
+      loadScript('src/learning-ui.js',()=>{
+        loadScript('src/ai-match-quality-fix.js',()=>{
+          loadScript('src/report-quality-digest-fix.js',()=>{K.bindUi();K.start();});
+        });
+      });
     });
   });
 });
