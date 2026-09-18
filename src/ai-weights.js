@@ -17,7 +17,7 @@ K.DEFAULT_AI_WEIGHTS={
   surroundRisk: -120000,
   battle: 200,
   statusInflict: 200,
-  statusSuffer: -263,
+  statusSuffer: -300,
   tempo: 2000
 };
 const POSITIVE_KEYS=['goalNow','blockGoal','pc','field','goalDist','goalThreat','cornerThreat','spawnBlock','surroundKill','battle','statusInflict','tempo'];
